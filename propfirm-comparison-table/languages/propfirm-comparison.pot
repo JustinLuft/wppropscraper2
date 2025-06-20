@@ -1,0 +1,399 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PropFirm Comparison Table 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-19 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: admin/class-pfct-admin-menu.php:33
+msgid "PropFirm Comparison"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:34
+msgid "PropFirm Comparison"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:43
+msgid "Settings"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:44
+msgid "Settings"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:51
+msgid "Manage Firms"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:52
+msgid "Manage Firms"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:65
+msgid "General Settings"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:71
+msgid "Default Currency"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:78
+msgid "Table Theme"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:90
+msgid "Welcome to PropFirm Comparison Table"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:91
+msgid "Manage your PropFirm comparison tables with ease."
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:94
+msgid "Total Firms"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:98
+msgid "Active Tables"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:103
+msgid "Quick Actions"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:105
+msgid "Manage Firms"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:108
+msgid "Settings"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:112
+msgid "Usage"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:113
+msgid "Use the shortcode to display your comparison table:"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:115
+msgid "With attributes:"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:138
+msgid "Add New Firm"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:142
+msgid "Firm Name"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:146
+msgid "Minimum Deposit"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:150
+msgid "Max Drawdown (%)"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:154
+msgid "Profit Target (%)"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:158
+msgid "Profit Split (%)"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:162
+msgid "Website URL"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:166
+msgid "Add Firm"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:171
+msgid "Existing Firms"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:183
+msgid "Configure general settings for the PropFirm Comparison Table."
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:206
+msgid "Light"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:207
+msgid "Dark"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:208
+msgid "Modern"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:218
+msgid "No firms found. Add your first firm above."
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:225
+msgid "Name"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:226
+msgid "Min Deposit"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:227
+msgid "Max Drawdown"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:228
+msgid "Profit Target"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:229
+msgid "Profit Split"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:230
+msgid "Actions"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:242
+msgid "Edit"
+msgstr ""
+
+#: admin/class-pfct-admin-menu.php:245
+msgid "Delete"
+msgstr ""
+
+#: public/class-pfct-shortcode.php:45
+msgid "No PropFirm data available."
+msgstr ""
+
+#: public/class-pfct-shortcode.php:78
+msgid "Firm"
+msgstr ""
+
+#: public/class-pfct-shortcode.php:79
+msgid "Min Deposit"
+msgstr ""
+
+#: public/class-pfct-shortcode.php:80
+msgid "Max Drawdown"
+msgstr ""
+
+#: public/class-pfct-shortcode.php:81
+msgid "Profit Target"
+msgstr ""
+
+#: public/class-pfct-shortcode.php:82
+msgid "Profit Split"
+msgstr ""
+
+#: public/class-pfct-shortcode.php:83
+msgid "Website"
+msgstr ""
+
+#: public/class-pfct-shortcode.php:98
+msgid "Visit"
+msgstr ""
+
+#: includes/class-pfct-activator.php:45
+msgid "PropFirm Comparison Table activated successfully!"
+msgstr ""
+
+#: includes/class-pfct-activator.php:65
+msgid "Error creating database tables."
+msgstr ""
+
+#: includes/class-pfct-ajax.php:88
+msgid "Firm added successfully!"
+msgstr ""
+
+#: includes/class-pfct-ajax.php:92
+msgid "Error adding firm to database."
+msgstr ""
+
+#: includes/class-pfct-ajax.php:96
+msgid "Invalid firm data provided."
+msgstr ""
+
+#: includes/class-pfct-ajax.php:126
+msgid "Firm updated successfully!"
+msgstr ""
+
+#: includes/class-pfct-ajax.php:130
+msgid "Error updating firm."
+msgstr ""
+
+#: includes/class-pfct-ajax.php:134
+msgid "Firm not found."
+msgstr ""
+
+#: includes/class-pfct-ajax.php:164
+msgid "Firm deleted successfully!"
+msgstr ""
+
+#: includes/class-pfct-ajax.php:168
+msgid "Error deleting firm."
+msgstr ""
+
+#: includes/class-pfct-ajax.php:172
+msgid "Firm not found."
+msgstr ""
+
+#: includes/class-pfct-ajax.php:202
+msgid "Bulk action completed successfully!"
+msgstr ""
+
+#: includes/class-pfct-ajax.php:206
+msgid "Error performing bulk action."
+msgstr ""
+
+#: includes/class-pfct-ajax.php:210
+msgid "Invalid bulk action."
+msgstr ""
+
+#: propfirm-comparison-table.php:85
+msgid "PropFirm Comparison Table requires WordPress 5.0 or higher."
+msgstr ""
+
+#: propfirm-comparison-table.php:95
+msgid "PropFirm Comparison Table requires PHP 7.4 or higher."
+msgstr ""
+
+#: admin/partials/admin-display.php:15
+msgid "PropFirm Comparison Settings"
+msgstr ""
+
+#: admin/partials/admin-display.php:18
+msgid "Table Settings"
+msgstr ""
+
+#: admin/partials/admin-display.php:22
+msgid "Default Currency Symbol"
+msgstr ""
+
+#: admin/partials/admin-display.php:29
+msgid "Rows Per Page"
+msgstr ""
+
+#: admin/partials/admin-display.php:36
+msgid "Enable Sorting"
+msgstr ""
+
+#: admin/partials/admin-display.php:43
+msgid "Enable Filtering"
+msgstr ""
+
+#: admin/partials/admin-display.php:50
+msgid "Color Scheme"
+msgstr ""
+
+#: admin/partials/admin-display.php:55
+msgid "Light Theme"
+msgstr ""
+
+#: admin/partials/admin-display.php:56
+msgid "Dark Theme"
+msgstr ""
+
+#: admin/partials/admin-display.php:57
+msgid "Custom Theme"
+msgstr ""
+
+#: admin/partials/admin-display.php:62
+msgid "Advanced Settings"
+msgstr ""
+
+#: admin/partials/admin-display.php:66
+msgid "Enable Caching"
+msgstr ""
+
+#: admin/partials/admin-display.php:73
+msgid "Cache Duration (hours)"
+msgstr ""
+
+#: admin/partials/admin-display.php:80
+msgid "Enable Debug Mode"
+msgstr ""
+
+#: admin/partials/admin-display.php:87
+msgid "API Settings"
+msgstr ""
+
+#: admin/partials/admin-display.php:91
+msgid "API Key"
+msgstr ""
+
+#: admin/partials/admin-display.php:98
+msgid "Auto-Update Data"
+msgstr ""
+
+#: admin/partials/admin-display.php:105
+msgid "Update Frequency"
+msgstr ""
+
+#: admin/partials/admin-display.php:110
+msgid "Daily"
+msgstr ""
+
+#: admin/partials/admin-display.php:111
+msgid "Weekly"
+msgstr ""
+
+#: admin/partials/admin-display.php:112
+msgid "Monthly"
+msgstr ""
+
+#: admin/partials/admin-display.php:117
+msgid "Save Settings"
+msgstr ""
+
+#: admin/partials/admin-display.php:122
+msgid "Import/Export"
+msgstr ""
+
+#: admin/partials/admin-display.php:126
+msgid "Export Data"
+msgstr ""
+
+#: admin/partials/admin-display.php:131
+msgid "Import Data"
+msgstr ""
+
+#: admin/partials/admin-display.php:135
+msgid "Choose file"
+msgstr ""
+
+#: admin/partials/admin-display.php:136
+msgid "Import"
+msgstr ""
+
+#: admin/partials/admin-display.php:141
+msgid "Backup & Restore"
+msgstr ""
+
+#: admin/partials/admin-display.php:145
+msgid "Create Backup"
+msgstr ""
+
+#: admin/partials/admin-display.php:150
+msgid "Restore from Backup"
+msgstr ""
