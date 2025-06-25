@@ -375,14 +375,14 @@ document.addEventListener('DOMContentLoaded', function() {
             tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #666;">No results match your filters.</td></tr>';
             return;
         }
-
+        //FRONTEND DISPLAY
         filteredData.forEach(row => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${row.business_name || 'N/A'}</strong></td>
                 <td>${getPlanType(row)}</td>
                 <td>${formatAccountSize(row.account_size)}</td>
-                <td>${row.profit_goal === 'N/A' ? 'N/A' : '$' + row.profit_goal}</td>
+                <td>${row.profit_goal === 'N/A' ? 'N/A' : '' + row.profit_goal}</td>
                 <td>${row.trial_type || 'N/A'}</td>
                 <td class="pfct-trustpilot-score">${row.trustpilot_score || 'N/A'}</td>
                 <td>${row.profit_goal.toLocaleString()}</td>
