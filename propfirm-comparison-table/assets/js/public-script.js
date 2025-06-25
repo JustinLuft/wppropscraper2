@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td class="pfct-price">${formatCurrency(row.funded_price || row.price_raw || row.price)}</td>
                 <td>${row.trial_type || 'N/A'}</td>
                 <td class="pfct-trustpilot-score">${row.trustpilot_score || 'N/A'}</td>
-                <td>${formatPercentage(row.profit_goal)}</td>
+                <td>${row.profit_goal.toLocaleString()}</td>
                 <td>${row.source || 'N/A'}</td>
             `;
             tbody.appendChild(tr);
