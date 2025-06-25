@@ -47,13 +47,13 @@
 }
 
 .pfct-form-group input[type="email"]:focus {
-    border-color: #0073aa;
+    border-color: #115bff;
     outline: none;
-    box-shadow: 0 0 5px rgba(0, 115, 170, 0.3);
+    box-shadow: 0 0 5px rgba(17, 91, 255, 0.3);
 }
 
 .pfct-submit-btn {
-    background: #0073aa;
+    background: #115bff;
     color: white;
     padding: 12px 30px;
     border: none;
@@ -66,7 +66,7 @@
 }
 
 .pfct-submit-btn:hover {
-    background: #005a87;
+    background: #0d4dd4;
 }
 
 .pfct-submit-btn:disabled {
@@ -133,7 +133,7 @@
 }
 
 .pfct-comparison-table th {
-    background: linear-gradient(135deg, #0073aa 0%, #005a87 100%);
+    background: #115bff;
     color: white;
     font-weight: bold;
     font-size: 14px;
@@ -165,7 +165,7 @@
 
 .pfct-price {
     font-weight: bold;
-    color: #0073aa;
+    color: #115bff;
     font-size: 18px;
 }
 
@@ -227,7 +227,7 @@
 /* Accessibility improvements */
 .pfct-form-group input[type="email"]:focus,
 .pfct-submit-btn:focus {
-    outline: 2px solid #0073aa;
+    outline: 2px solid #115bff;
     outline-offset: 2px;
 }
 
