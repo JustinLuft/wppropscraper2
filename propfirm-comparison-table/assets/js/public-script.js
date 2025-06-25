@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td><strong>${row.business_name || 'N/A'}</strong></td>
                 <td>${getPlanType(row)}</td>
                 <td>${formatAccountSize(row.account_size)}</td>
-                <td class="pfct-price">${formatCurrency(row.funded_price || row.price_raw || row.price)}</td>
+                <td>${row.profit_goal === 'N/A' ? 'N/A' : '$' + row.profit_goal}</td>
                 <td>${row.trial_type || 'N/A'}</td>
                 <td class="pfct-trustpilot-score">${row.trustpilot_score || 'N/A'}</td>
                 <td>${row.profit_goal.toLocaleString()}</td>
