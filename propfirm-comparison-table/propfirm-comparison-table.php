@@ -42,7 +42,6 @@ register_deactivation_hook(__FILE__, array('PFCT_Deactivator', 'deactivate'));
 function pfct_init() {
     // Debug: Check if pfct_init is called
     add_action('admin_notices', function() {
-        echo '<div class="notice notice-warning"><p>🟡 pfct_init() function called!</p></div>';
     });
     
     // Load text domain for translations
@@ -55,7 +54,6 @@ function pfct_init() {
     
     if (is_admin()) {
         add_action('admin_notices', function() {
-            echo '<div class="notice notice-info"><p>🔵 Creating admin classes...</p></div>';
         });
         new PFCT_Admin_Menu();
         new PFCT_Admin();
@@ -65,5 +63,4 @@ add_action('plugins_loaded', 'pfct_init');
 
 // Add test line for debugging
 add_action('wp_footer', function() { 
-    echo '<!-- PropFirm Plugin Test -->'; 
 });
