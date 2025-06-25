@@ -13,7 +13,7 @@ class PFCT_Admin_Menu {
     public function __construct() {
         // Debug: Check if constructor is called
         add_action('admin_notices', function() {
-            echo '<div class="notice notice-info"><p>🔵 PFCT_Admin_Menu constructor called!</p></div>';
+            //echo '<div class="notice notice-info"><p>🔵 PFCT_Admin_Menu constructor called!</p></div>';
         });
         
         add_action('admin_menu', array($this, 'add_admin_menu'));
@@ -25,7 +25,7 @@ class PFCT_Admin_Menu {
     public function add_admin_menu() {
         // Debug: Check if add_admin_menu is called
         add_action('admin_notices', function() {
-            echo '<div class="notice notice-success"><p>✅ add_admin_menu() function called!</p></div>';
+            //echo '<div class="notice notice-success"><p>✅ add_admin_menu() function called!</p></div>';
         });
         
         $page = add_options_page(
@@ -39,7 +39,7 @@ class PFCT_Admin_Menu {
         // Debug: Check if page was created
         if ($page) {
             add_action('admin_notices', function() use ($page) {
-                echo '<div class="notice notice-success"><p>✅ Menu page created successfully! Hook: ' . $page . '</p></div>';
+                //echo '<div class="notice notice-success"><p>✅ Menu page created successfully! Hook: ' . $page . '</p></div>';
             });
         } else {
             add_action('admin_notices', function() {
