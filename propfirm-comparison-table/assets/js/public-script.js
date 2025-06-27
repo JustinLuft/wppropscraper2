@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
-                    <input type="number" id="pfct-filter-price" placeholder="Enter max price" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <input type="number" id="pfct-filter-price" placeholder="Enter max price" style="width: 120px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                 </div>
                 <div style="display: flex; align-items: end;">
                     <button id="pfct-clear-filters" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">
@@ -303,55 +303,73 @@ document.addEventListener('DOMContentLoaded', function() {
         return filterContainer;
     }
 
-    // Get numeric price value from row data
-    function getNumericPrice(row) {
-        // Try different price fields in order of preference
-        const priceFields = [
-            row.funded_price,
-            row.price_raw,
-            row.price,
-            row.cost,
-            row.fee
-        ];
+    / Replace the getNumericPrice function with this corrected version:
+
+// Get numeric price value from row data - FIXED VERSION
+function getNumericPrice(row) {
+    // First priority: check for 'price' field (since you want to filter by price)
+    if (row.price && row.price !== '' && row.price !== 'N/A') {
+        // Remove currency symbols, commas, and other non-numeric characters
+        const cleanPrice = row.price.toString().replace(/[$,£€\s]/g, '');
+        const numPrice = parseFloat(cleanPrice);
+        if (!isNaN(numPrice) && numPrice >= 0) {
+            return numPrice;
+        }
+    }
+    
+    // Fallback to other price fields if 'price' is not available
+    const priceFields = [
+        row.funded_price,
+        row.price_raw,
+        row.cost,
+        row.fee
+    ];
+    
+    for (let price of priceFields) {
+        if (price && price !== '' && price !== 'N/A') {
+            // Remove currency symbols, commas, and other non-numeric characters
+            const cleanPrice = price.toString().replace(/[$,£€\s]/g, '');
+            const numPrice = parseFloat(cleanPrice);
+            if (!isNaN(numPrice) && numPrice >= 0) {
+                return numPrice;
+            }
+        }
+    }
+    
+    return null; // Return null instead of 0 when no valid price found
+}
+
+// Also update the applyFilters function price filter logic:
+function applyFilters() {
+    const businessFilter = document.getElementById('pfct-filter-business')?.value || '';
+    const planFilter = document.getElementById('pfct-filter-plan')?.value || '';
+    const sizeFilter = document.getElementById('pfct-filter-size')?.value || '';
+    const trialFilter = document.getElementById('pfct-filter-trial')?.value || '';
+    const priceFilter = document.getElementById('pfct-filter-price')?.value || '';
+
+    filteredData = allData.filter(row => {
+        if (businessFilter && row.business_name !== businessFilter) return false;
+        if (planFilter && getPlanType(row) !== planFilter) return false;
+        if (sizeFilter && row.account_size !== sizeFilter) return false;
+        if (trialFilter && row.trial_type !== trialFilter) return false;
         
-        for (let price of priceFields) {
-            if (price && price !== '' && price !== 'N/A') {
-                // Remove currency symbols, commas, and other non-numeric characters
-                const cleanPrice = price.toString().replace(/[$,£€\s]/g, '');
-                const numPrice = parseFloat(cleanPrice);
-                if (!isNaN(numPrice) && numPrice > 0) {
-                    return numPrice;
-                }
+        // FIXED: Price filter logic
+        if (priceFilter) {
+            const rowPrice = getNumericPrice(row);
+            const maxPrice = parseFloat(priceFilter);
+            
+            // Skip rows with no valid price data, or filter out if price exceeds max
+            if (rowPrice === null || isNaN(maxPrice) || rowPrice > maxPrice) {
+                return false;
             }
         }
         
-        return 0; // Default to 0 if no valid price found
-    }
+        return true;
+    });
 
-    // Apply filters to data
-    function applyFilters() {
-        const businessFilter = document.getElementById('pfct-filter-business')?.value || '';
-        const planFilter = document.getElementById('pfct-filter-plan')?.value || '';
-        const sizeFilter = document.getElementById('pfct-filter-size')?.value || '';
-        const trialFilter = document.getElementById('pfct-filter-trial')?.value || '';
-        const priceFilter = document.getElementById('pfct-filter-price')?.value || '';
-
-        filteredData = allData.filter(row => {
-            if (businessFilter && row.business_name !== businessFilter) return false;
-            if (planFilter && getPlanType(row) !== planFilter) return false;
-            if (sizeFilter && row.account_size !== sizeFilter) return false;
-            if (trialFilter && row.trial_type !== trialFilter) return false;
-            if (priceFilter) {
-                const rowPrice = getNumericPrice(row);
-                const maxPrice = parseFloat(priceFilter);
-                if (isNaN(maxPrice) || rowPrice > maxPrice) return false;
-            }
-            return true;
-        });
-
-        renderTable();
-        updateResultsCount();
-    }
+    renderTable();
+    updateResultsCount();
+}
 
     // Update results count
     function updateResultsCount() {
