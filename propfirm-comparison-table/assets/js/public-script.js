@@ -256,42 +256,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
         filterContainer.innerHTML = `
             <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Filter Results</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: start;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Business:</label>
-                    <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 40px;">
+                    <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="">All Businesses</option>
                         ${businesses.map(business => `<option value="${business}">${business}</option>`).join('')}
                     </select>
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Plan Type:</label>
-                    <select id="pfct-filter-plan" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 40px;">
+                    <select id="pfct-filter-plan" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="">All Plans</option>
                         ${planTypes.map(plan => `<option value="${plan}">${plan}</option>`).join('')}
                     </select>
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Account Size:</label>
-                    <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 40px;">
+                    <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="">All Sizes</option>
                         ${accountSizes.map(size => `<option value="${size}">${formatAccountSize(size)}</option>`).join('')}
                     </select>
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Trial Type:</label>
-                    <select id="pfct-filter-trial" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 40px;">
+                    <select id="pfct-filter-trial" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="">All Types</option>
                         ${trialTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
                     </select>
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
-                    <input type="number" id="pfct-filter-price" placeholder="Enter max price" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; height: 40px; box-sizing: border-box;">
+                    <input type="number" id="pfct-filter-price" placeholder="Enter max price" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                 </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555; opacity: 0;">Actions:</label>
-                    <button id="pfct-clear-filters" style="padding: 8px 16px; background: #000000; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; height: 40px; font-weight: bold; transition: background-color 0.2s;">
+                <div style="display: flex; align-items: end;">
+                    <button id="pfct-clear-filters" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">
                         Clear Filters
                     </button>
                 </div>
@@ -485,17 +484,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Clear filters button with hover effect
+        // Clear filters button
         const clearBtn = document.getElementById('pfct-clear-filters');
         if (clearBtn) {
-            clearBtn.addEventListener('mouseenter', function() {
-                this.style.backgroundColor = '#333333';
-            });
-            
-            clearBtn.addEventListener('mouseleave', function() {
-                this.style.backgroundColor = '#000000';
-            });
-            
             clearBtn.addEventListener('click', () => {
                 filterElements.forEach(id => {
                     const element = document.getElementById(id);
