@@ -303,73 +303,55 @@ document.addEventListener('DOMContentLoaded', function() {
         return filterContainer;
     }
 
-    / Replace the getNumericPrice function with this corrected version:
-
-// Get numeric price value from row data - FIXED VERSION
-function getNumericPrice(row) {
-    // First priority: check for 'price' field (since you want to filter by price)
-    if (row.price && row.price !== '' && row.price !== 'N/A') {
-        // Remove currency symbols, commas, and other non-numeric characters
-        const cleanPrice = row.price.toString().replace(/[$,£€\s]/g, '');
-        const numPrice = parseFloat(cleanPrice);
-        if (!isNaN(numPrice) && numPrice >= 0) {
-            return numPrice;
-        }
-    }
-    
-    // Fallback to other price fields if 'price' is not available
-    const priceFields = [
-        row.funded_price,
-        row.price_raw,
-        row.cost,
-        row.fee
-    ];
-    
-    for (let price of priceFields) {
-        if (price && price !== '' && price !== 'N/A') {
-            // Remove currency symbols, commas, and other non-numeric characters
-            const cleanPrice = price.toString().replace(/[$,£€\s]/g, '');
-            const numPrice = parseFloat(cleanPrice);
-            if (!isNaN(numPrice) && numPrice >= 0) {
-                return numPrice;
-            }
-        }
-    }
-    
-    return null; // Return null instead of 0 when no valid price found
-}
-
-// Also update the applyFilters function price filter logic:
-function applyFilters() {
-    const businessFilter = document.getElementById('pfct-filter-business')?.value || '';
-    const planFilter = document.getElementById('pfct-filter-plan')?.value || '';
-    const sizeFilter = document.getElementById('pfct-filter-size')?.value || '';
-    const trialFilter = document.getElementById('pfct-filter-trial')?.value || '';
-    const priceFilter = document.getElementById('pfct-filter-price')?.value || '';
-
-    filteredData = allData.filter(row => {
-        if (businessFilter && row.business_name !== businessFilter) return false;
-        if (planFilter && getPlanType(row) !== planFilter) return false;
-        if (sizeFilter && row.account_size !== sizeFilter) return false;
-        if (trialFilter && row.trial_type !== trialFilter) return false;
+    // Get numeric price value from row data
+    function getNumericPrice(row) {
+        // Try different price fields in order of preference
+        const priceFields = [
+            row.funded_price,
+            row.price_raw,
+            row.price,
+            row.cost,
+            row.fee
+        ];
         
-        // FIXED: Price filter logic
-        if (priceFilter) {
-            const rowPrice = getNumericPrice(row);
-            const maxPrice = parseFloat(priceFilter);
-            
-            // Skip rows with no valid price data, or filter out if price exceeds max
-            if (rowPrice === null || isNaN(maxPrice) || rowPrice > maxPrice) {
-                return false;
+        for (let price of priceFields) {
+            if (price && price !== '' && price !== 'N/A') {
+                // Remove currency symbols, commas, and other non-numeric characters
+                const cleanPrice = price.toString().replace(/[$,£€\s]/g, '');
+                const numPrice = parseFloat(cleanPrice);
+                if (!isNaN(numPrice) && numPrice > 0) {
+                    return numPrice;
+                }
             }
         }
         
-        return true;
-    });
+        return 0; // Default to 0 if no valid price found
+    }
 
-    renderTable();
-    updateResultsCount();
-}
+    // Apply filters to data
+    function applyFilters() {
+        const businessFilter = document.getElementById('pfct-filter-business')?.value || '';
+        const planFilter = document.getElementById('pfct-filter-plan')?.value || '';
+        const sizeFilter = document.getElementById('pfct-filter-size')?.value || '';
+        const trialFilter = document.getElementById('pfct-filter-trial')?.value || '';
+        const priceFilter = document.getElementById('pfct-filter-price')?.value || '';
+
+        filteredData = allData.filter(row => {
+            if (businessFilter && row.business_name !== businessFilter) return false;
+            if (planFilter && getPlanType(row) !== planFilter) return false;
+            if (sizeFilter && row.account_size !== sizeFilter) return false;
+            if (trialFilter && row.trial_type !== trialFilter) return false;
+            if (priceFilter) {
+                const rowPrice = getNumericPrice(row);
+                const maxPrice = parseFloat(priceFilter);
+                if (isNaN(maxPrice) || rowPrice > maxPrice) return false;
+            }
+            return true;
+        });
+
+        renderTable();
+        updateResultsCount();
+    }
 
     // Update results count
     function updateResultsCount() {
