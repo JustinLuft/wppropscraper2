@@ -265,6 +265,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Replace the createFilterControls function with this fixed version:
 
+// Replace the createFilterControls function with this fixed version:
+
+// Replace the createFilterControls function with this fixed version:
+
 function createFilterControls(data) {
     const filterContainer = document.createElement('div');
     filterContainer.className = 'pfct-filters';
@@ -320,7 +324,7 @@ function createFilterControls(data) {
                 </select>
             </div>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 150px 120px; gap: 15px; margin-top: 15px; align-items: start;">
+        <div style="display: grid; grid-template-columns: 2fr 130px 120px; gap: 25px; margin-top: 15px; align-items: start;">
             <div>
                 <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Trial Type:</label>
                 <select id="pfct-filter-trial" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
