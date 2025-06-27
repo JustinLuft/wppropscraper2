@@ -1,582 +1,589 @@
-/**
- * Public JavaScript for PropFirm Comparison Table with Filtering - FIXED VERSION
- */
+import React, { useState, useEffect } from 'react';
+import { db } from '@/firebase/firebase';
+import { collection, addDoc, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { auth } from '@/firebase/firebase';
+import { User, MapPin, Mail, Github, Linkedin, Globe, Code, Calendar, Camera, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('pfct-email-form');
-    const emailInput = document.getElementById('pfct-email');
-    const submitBtn = form ? form.querySelector('.pfct-submit-btn') : null;
-    const loadingDiv = document.getElementById('pfct-loading');
-    const errorDiv = document.getElementById('pfct-error');
-    const emailCapture = document.getElementById('pfct-email-capture');
-    const tableContainer = document.getElementById('pfct-table-container');
-    const tableContent = document.getElementById('pfct-table-content');
-
-    // Configuration - Your GitHub CSV URL
-    const CSV_URL = 'https://raw.githubusercontent.com/JustinLuft/propdatascraper/refs/heads/main/combined_data.csv';
-    
-    // Global data storage
-    let allData = [];
-    let filteredData = [];
-
-    // Only proceed if form exists
-    if (!form) return;
-
-    // Form submission handler
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const email = emailInput.value.trim();
-        const nonceField = document.getElementById('pfct_nonce');
-        const nonce = nonceField ? nonceField.value : '';
-        
-        if (!email) {
-            showError('Please enter a valid email address.');
-            return;
-        }
-
-        if (!isValidEmail(email)) {
-            showError('Please enter a valid email address.');
-            return;
-        }
-
-        // Show loading state
-        setLoadingState(true);
-
-        try {
-            const response = await fetch(pfct_ajax.ajax_url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'pfct_save_email',
-                    email: email,
-                    nonce: nonce
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.json();
-
-            if (data.success) {
-                // Hide email form and show table
-                hideEmailForm();
-                showTableContainer();
-                
-                // Load table data from CSV
-                loadTableData();
-                
-                // Track conversion (if analytics are available)
-                trackConversion(email);
-            } else {
-                showError(data.data || 'Failed to save email. Please try again.');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showError('An error occurred. Please check your internet connection and try again.');
-        } finally {
-            // Reset button state
-            setLoadingState(false);
-        }
-    });
-
-    // Email validation
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
-    // Show error message
-    function showError(message) {
-        if (errorDiv) {
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
-        }
-    }
-
-    // Set loading state
-    function setLoadingState(isLoading) {
-        if (submitBtn) {
-            submitBtn.disabled = isLoading;
-            submitBtn.textContent = isLoading ? 'Processing...' : submitBtn.getAttribute('data-original-text') || 'Submit';
-            
-            if (!submitBtn.getAttribute('data-original-text')) {
-                submitBtn.setAttribute('data-original-text', submitBtn.textContent);
-            }
-        }
-        
-        if (loadingDiv) {
-            loadingDiv.style.display = isLoading ? 'block' : 'none';
-        }
-        
-        if (errorDiv) {
-            errorDiv.style.display = 'none';
-        }
-    }
-
-    // Hide email form with animation
-    function hideEmailForm() {
-        if (emailCapture) {
-            emailCapture.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            emailCapture.style.opacity = '0';
-            emailCapture.style.transform = 'translateY(-20px)';
-            
-            setTimeout(() => {
-                emailCapture.style.display = 'none';
-            }, 300);
-        }
-    }
-
-    // Show table container with animation
-    function showTableContainer() {
-        if (tableContainer) {
-            tableContainer.style.display = 'block';
-            tableContainer.style.opacity = '0';
-            tableContainer.style.transform = 'translateY(20px)';
-            
-            tableContainer.offsetHeight;
-            
-            tableContainer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            tableContainer.style.opacity = '1';
-            tableContainer.style.transform = 'translateY(0)';
-        }
-    }
-
-    // Parse CSV text into array of objects
-    function parseCSV(csvText) {
-        const lines = csvText.trim().split('\n');
-        const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, ''));
-        const data = [];
-
-        for (let i = 1; i < lines.length; i++) {
-            const values = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let j = 0; j < lines[i].length; j++) {
-                const char = lines[i][j];
-                
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    values.push(current.trim().replace(/"/g, ''));
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            values.push(current.trim().replace(/"/g, ''));
-            
-            if (values.length === headers.length) {
-                const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index];
-                });
-                data.push(row);
-            }
-        }
-        
-        return data;
-    }
-
-    // Format account size to show currency with K suffix (e.g. "$25K", "$50K", "$100K")
-    function formatAccountSize(value) {
-        if (!value || value === '' || value === 'N/A') return 'N/A';
-        
-        // Remove any existing formatting
-        const cleanValue = value.toString().replace(/[$,]/g, '');
-        const numValue = parseFloat(cleanValue);
-        
-        if (isNaN(numValue)) return value;
-        
-        return `$${numValue}K`;
-    }
-
-    // Format currency values
-    function formatCurrency(value) {
-        if (!value || value === '' || value === 'N/A') return 'N/A';
-        const numValue = parseFloat(value.toString().replace(/[$,£€\s]/g, ''));
-        return isNaN(numValue) ? value : `${numValue.toLocaleString()}`;
-    }
-
-    // Format percentage values
-    function formatPercentage(value) {
-        if (!value || value === '' || value === 'N/A') return 'N/A';
-        return value.includes('%') ? value : `${value}%`;
-    }
-
-    // Get plan type from data - prioritize trial_type, fall back to plan_name
-    function getPlanType(row) {
-        // Check if we have valid trial type
-        if (row.trial_type && row.trial_type !== '' && row.trial_type !== 'N/A') {
-            return row.trial_type;
-        }
-
-        // Fall back to plan name
-        if (row.plan_name && row.plan_name !== '' && row.plan_name !== 'N/A') {
-            return row.plan_name;
-        }
-
-        return 'N/A';
-    }
-
-
-    // Create filter controls
-    function createFilterControls(data) {
-        const filterContainer = document.createElement('div');
-        filterContainer.className = 'pfct-filters';
-        filterContainer.style.cssText = `
-            background: #f8f9fa;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
-        `;
-
-        // Get unique values for key filter fields
-        const businesses = [...new Set(data.map(row => row.business_name))].filter(Boolean).sort();
-        
-        // For plan types, combine plan_name and trial_type
-        const planTypes = [...new Set(data.map(row => getPlanType(row)))].filter(val => val !== 'N/A').sort();
-        
-        const accountSizes = [...new Set(data.map(row => row.account_size))].filter(Boolean).sort((a, b) => {
-            const aNum = parseFloat(a.replace(/[$,K]/g, '')) * (a.includes('K') ? 1000 : 1);
-            const bNum = parseFloat(b.replace(/[$,K]/g, '')) * (b.includes('K') ? 1000 : 1);
-            return aNum - bNum;
-        });
-        
-        const trialTypes = [...new Set(data.map(row => row.trial_type))].filter(Boolean).sort();
-
-        filterContainer.innerHTML = `
-            <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Filter Results</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Business:</label>
-                    <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">All Businesses</option>
-                        ${businesses.map(business => `<option value="${business}">${business}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Plan Type:</label>
-                    <select id="pfct-filter-plan" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">All Plans</option>
-                        ${planTypes.map(plan => `<option value="${plan}">${plan}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Account Size:</label>
-                    <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">All Sizes</option>
-                        ${accountSizes.map(size => `<option value="${size}">${formatAccountSize(size)}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Trial Type:</label>
-                    <select id="pfct-filter-trial" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">All Types</option>
-                        ${trialTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
-                    <input type="number" id="pfct-filter-price" placeholder="Enter max price" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                <div style="display: flex; align-items: end;">
-                    <button id="pfct-clear-filters" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">
-                        Clear Filters
-                    </button>
-                </div>
-            </div>
-            <div style="margin-top: 15px; text-align: center;">
-                <span id="pfct-results-count" style="font-weight: bold; color: #007cba;"></span>
-            </div>
-        `;
-
-        return filterContainer;
-    }
-
-    // Get numeric price value from row data
-    function getNumericPrice(row) {
-        // Try different price fields in order of preference
-        const priceFields = [
-            row.funded_price,
-            row.price_raw,
-            row.price,
-            row.cost,
-            row.fee
-        ];
-        
-        for (let price of priceFields) {
-            if (price && price !== '' && price !== 'N/A') {
-                // Remove currency symbols, commas, and other non-numeric characters
-                const cleanPrice = price.toString().replace(/[$,£€\s]/g, '');
-                const numPrice = parseFloat(cleanPrice);
-                if (!isNaN(numPrice) && numPrice > 0) {
-                    return numPrice;
-                }
-            }
-        }
-        
-        return 0; // Default to 0 if no valid price found
-    }
-
-    // Apply filters to data
-    function applyFilters() {
-        const businessFilter = document.getElementById('pfct-filter-business')?.value || '';
-        const planFilter = document.getElementById('pfct-filter-plan')?.value || '';
-        const sizeFilter = document.getElementById('pfct-filter-size')?.value || '';
-        const trialFilter = document.getElementById('pfct-filter-trial')?.value || '';
-        const priceFilter = document.getElementById('pfct-filter-price')?.value || '';
-
-        filteredData = allData.filter(row => {
-            if (businessFilter && row.business_name !== businessFilter) return false;
-            if (planFilter && getPlanType(row) !== planFilter) return false;
-            if (sizeFilter && row.account_size !== sizeFilter) return false;
-            if (trialFilter && row.trial_type !== trialFilter) return false;
-            if (priceFilter) {
-                const rowPrice = getNumericPrice(row);
-                const maxPrice = parseFloat(priceFilter);
-                if (isNaN(maxPrice) || rowPrice > maxPrice) return false;
-            }
-            return true;
-        });
-
-        renderTable();
-        updateResultsCount();
-    }
-
-    // Update results count
-    function updateResultsCount() {
-        const countElement = document.getElementById('pfct-results-count');
-        if (countElement) {
-            countElement.textContent = `Showing ${filteredData.length} of ${allData.length} results`;
-        }
-    }
-
-    // Render table with current filtered data - FIXED COLUMN MAPPING
-    function renderTable() {
-        const tableElement = document.querySelector('.pfct-comparison-table');
-        if (!tableElement) return;
-
-        const tbody = tableElement.querySelector('tbody');
-        if (!tbody) return;
-
-        tbody.innerHTML = '';
-
-        if (filteredData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #666;">No results match your filters.</td></tr>';
-            return;
-        }
-        //FRONTEND DISPLAY
-        filteredData.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><strong>${row.business_name || 'N/A'}</strong></td>
-                <td>${getPlanType(row)}</td>
-                <td>${formatAccountSize(row.account_size)}</td>
-                <td>${row.profit_goal === 'N/A' ? 'N/A' : '' + row.profit_goal}</td>
-                <td>${row.trial_type || 'N/A'}</td>
-                <td class="pfct-trustpilot-score">${row.trustpilot_score || 'N/A'}</td>
-                <td>${row.profit_goal.toLocaleString()}</td>
-                <td>${row.source || 'N/A'}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        addTableInteractivity();
-    }
-
-    // Load table data from CSV
-    async function loadTableData() {
-        if (!tableContent) return;
-
-        tableContent.innerHTML = '<div style="text-align: center; padding: 20px;">Loading data...</div>';
-
-        try {
-            const response = await fetch(CSV_URL);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch CSV: ${response.status}`);
-            }
-            
-            const csvText = await response.text();
-            allData = parseCSV(csvText);
-            filteredData = [...allData];
-            
-            if (allData.length === 0) {
-                throw new Error('No data found in CSV file');
-            }
-
-            // Create filter controls
-            const filterControls = createFilterControls(allData);
-            
-            // Build table HTML
-            const tableHTML = `
-                <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                    <thead>
-                        <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Business</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Plan</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Account Size</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Price</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Trial Type</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Trustpilot</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Profit Goal</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Source</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-                <div style="text-align: center; margin-top: 20px; font-size: 14px; color: #666;">
-                    <p>* Prices and terms are subject to change. Please verify directly with each provider.</p>
-                    <p>Last updated: ${new Date().toLocaleDateString()}</p>
-                    <p>Data source: <a href="${CSV_URL}" target="_blank" style="color: #666;">GitHub CSV</a></p>
-                </div>
-            `;
-            
-            tableContent.innerHTML = '';
-            tableContent.appendChild(filterControls);
-            tableContent.insertAdjacentHTML('beforeend', tableHTML);
-            
-            // Add event listeners for filters
-            setupFilterListeners();
-            
-            // Initial render
-            renderTable();
-            updateResultsCount();
-            
-        } catch (error) {
-            console.error('Error loading CSV data:', error);
-            
-            tableContent.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #d63638;">
-                    <p>Unable to load data from CSV file.</p>
-                    <p style="font-size: 12px; color: #666;">${error.message}</p>
-                </div>
-            `;
-        }
-    }
-
-    // Setup filter event listeners
-    function setupFilterListeners() {
-        const filterElements = [
-            'pfct-filter-business',
-            'pfct-filter-plan', 
-            'pfct-filter-size',
-            'pfct-filter-trial',
-            'pfct-filter-price'
-        ];
-
-        filterElements.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('change', applyFilters);
-                if (element.type === 'number') {
-                    element.addEventListener('input', debounce(applyFilters, 300));
-                }
-            }
-        });
-
-        // Clear filters button
-        const clearBtn = document.getElementById('pfct-clear-filters');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => {
-                filterElements.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.value = '';
-                    }
-                });
-                filteredData = [...allData];
-                renderTable();
-                updateResultsCount();
-            });
-        }
-    }
-
-    // Debounce function for input events
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    // Add interactivity to table
-    function addTableInteractivity() {
-        const tableRows = document.querySelectorAll('.pfct-comparison-table tbody tr');
-        
-        tableRows.forEach(row => {
-            row.style.cursor = 'pointer';
-            row.addEventListener('mouseenter', function() {
-                this.style.backgroundColor = '#f8f9fa';
-            });
-            row.addEventListener('mouseleave', function() {
-                this.style.backgroundColor = '';
-            });
-            row.addEventListener('click', function() {
-                console.log('Row clicked:', this);
-            });
-        });
-    }
-
-    // Track conversion
-    function trackConversion(email) {
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'conversion', {
-                'event_category': 'PropFirm',
-                'event_label': 'Email Captured',
-                'value': 1
-            });
-        }
-        
-        if (typeof fbq !== 'undefined') {
-            fbq('track', 'Lead', {
-                content_name: 'PropFirm Comparison Table'
-            });
-        }
-        
-        console.log('Email captured:', email);
-    }
-
-    // Input validation
-    if (emailInput) {
-        emailInput.addEventListener('input', function() {
-            const email = this.value.trim();
-            
-            if (email && !isValidEmail(email)) {
-                this.style.borderColor = '#d63638';
-            } else {
-                this.style.borderColor = '#ccc';
-            }
-        });
-        
-        emailInput.addEventListener('focus', function() {
-            if (errorDiv) {
-                errorDiv.style.display = 'none';
-            }
-        });
-    }
-});
-
-// Utility function for smooth scrolling
-function scrollToElement(element) {
-    if (element) {
-        element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }
+interface ProfileData {
+  name: string;
+  bio: string;
+  location: string;
+  email: string;
+  linkedin: string;
+  github: string;
+  website: string;
+  profileImage: string;
+  role: string;
+  graduationCohort: string;
+  skillTags: string[];
 }
+
+const ManageProfilePage: React.FC = () => {
+  const [formData, setFormData] = useState<ProfileData>({
+    name: '',
+    bio: '',
+    location: '',
+    email: auth.currentUser?.email || '',
+    linkedin: '',
+    github: '',
+    website: '',
+    profileImage: '',
+    role: '',
+    graduationCohort: '',
+    skillTags: []
+  });
+
+  const [currentSkill, setCurrentSkill] = useState('');
+  const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [existingProfileId, setExistingProfileId] = useState<string | null>(null);
+  const [profileStatus, setProfileStatus] = useState<string>('');
+
+  const suggestedSkills = [
+    'React', 'Vue', 'Angular', 'JavaScript', 'TypeScript', 'Node.js', 'Python', 'Java', 'C++', 'C#', 
+    'PHP', 'Ruby', 'Go', 'Rust', 'HTML', 'CSS', 'Tailwind', 'Bootstrap', 'SASS', 'MongoDB', 
+    'PostgreSQL', 'MySQL', 'Firebase', 'AWS', 'Docker', 'GraphQL', 'Redux', 'Express', 'Django', 
+    'Flask', 'Spring Boot', 'Laravel', 'Rails', 'Git', 'Linux', 'DevOps', 'CI/CD', 'Jest', 'Cypress'
+  ];
+
+  const roleOptions = [
+    'Frontend Developer',
+    'Backend Developer', 
+    'Full Stack Developer',
+    'Data Analyst',
+    'UI/UX Designer',
+  ];
+
+  const cohortOptions = [
+    '2025', '2024', '2023', '2022', '2021', '2020', '2019', '2018'
+  ];
+
+  // Load existing profile data on component mount
+  useEffect(() => {
+    const loadExistingProfile = async () => {
+      if (!auth.currentUser) {
+        setIsLoadingProfile(false);
+        return;
+      }
+
+      try {
+        const q = query(
+          collection(db, 'graduates'), 
+          where('userId', '==', auth.currentUser.uid)
+        );
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          const profileDoc = querySnapshot.docs[0];
+          const profileData = profileDoc.data();
+          
+          // Pre-fill form with existing data
+          setFormData({
+            name: profileData.name || '',
+            bio: profileData.bio || '',
+            location: profileData.location || '',
+            email: profileData.email || auth.currentUser?.email || '',
+            linkedin: profileData.linkedin || '',
+            github: profileData.github || '',
+            website: profileData.website || '',
+            profileImage: profileData.profileImage || '',
+            role: profileData.role || '',
+            graduationCohort: profileData.graduationCohort || '',
+            skillTags: profileData.skillTags || []
+          });
+          
+          setExistingProfileId(profileDoc.id);
+          setProfileStatus(profileData.status || 'pending');
+          
+          if (profileData.isVerified) {
+            setMessage('Your profile is verified and live on the showcase!');
+            setIsSuccess(true);
+          } else if (profileData.status === 'pending') {
+            setMessage('Your profile is pending administrator approval.');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading existing profile:', error);
+        setMessage('Error loading existing profile data.');
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    loadExistingProfile();
+  }, []);
+
+  const handleInputChange = (field: keyof ProfileData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const addSkill = () => {
+    if (currentSkill.trim() && !formData.skillTags.includes(currentSkill.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        skillTags: [...prev.skillTags, currentSkill.trim()]
+      }));
+      setCurrentSkill('');
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      skillTags: prev.skillTags.filter(skill => skill !== skillToRemove)
+    }));
+  };
+
+  const addSuggestedSkill = (skill: string) => {
+    if (!formData.skillTags.includes(skill)) {
+      setFormData(prev => ({
+        ...prev,
+        skillTags: [...prev.skillTags, skill]
+      }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setMessage('');
+
+    // Check authentication
+    if (!auth.currentUser) {
+      setMessage('You must be logged in to submit a profile.');
+      setIsLoading(false);
+      return;
+    }
+
+    // Validation
+    if (!formData.name.trim() || !formData.bio.trim() || !formData.location.trim() || 
+        !formData.role || !formData.graduationCohort || formData.skillTags.length === 0) {
+      setMessage('Please fill in all required fields and add at least one skill.');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const profileData = {
+        ...formData,
+        name: formData.name.trim(),
+        bio: formData.bio.trim(),
+        location: formData.location.trim(),
+        updatedAt: new Date().toISOString(),
+        userId: auth.currentUser.uid
+      };
+
+      if (existingProfileId) {
+        // Update existing profile
+        await updateDoc(doc(db, 'graduates', existingProfileId), {
+          ...profileData,
+          status: 'pending' // Reset to pending when updated
+        });
+        setMessage('Profile updated successfully! Your changes have been submitted for administrator review.');
+      } else {
+        // Create new profile
+        const newProfileData = {
+          ...profileData,
+          isVerified: false,
+          status: 'pending',
+          createdAt: new Date().toISOString(),
+        };
+        
+        const docRef = await addDoc(collection(db, 'graduates'), newProfileData);
+        setExistingProfileId(docRef.id);
+        setMessage('Profile submitted successfully! Your submission has been sent to administrators for review.');
+      }
+      
+      setIsSuccess(true);
+      setProfileStatus('pending');
+      
+    } catch (error: any) {
+      console.error('Error submitting profile:', error);
+      
+      if (error.code === 'permission-denied') {
+        setMessage('Permission denied. Please check your login status and try again.');
+      } else if (error.code === 'unauthenticated') {
+        setMessage('You must be logged in to submit a profile. Please log in and try again.');
+      } else {
+        setMessage('Error submitting profile: ' + error.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addSkill();
+    }
+  };
+
+  if (isLoadingProfile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="animate-spin mx-auto mb-4 text-pink-500" size={32} />
+          <p className="text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-pink-400 to-purple-400 text-white py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold mb-4">
+              {existingProfileId ? 'Manage Your Profile' : 'Submit Your Profile'}
+            </h1>
+            <p className="text-xl opacity-90">
+              {existingProfileId ? 'Update your information in the Carolina Graduate Showcase' : 'Apply to join the Carolina Graduate Showcase'}
+            </p>
+            <div className="mt-4 flex items-center justify-center text-sm opacity-80">
+              <AlertCircle className="mr-2" size={16} />
+              <span>All submissions are reviewed by administrators before publication</span>
+            </div>
+            {profileStatus && (
+              <div className="mt-2">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  profileStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                  profileStatus === 'approved' ? 'bg-green-100 text-green-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  Status: {profileStatus.charAt(0).toUpperCase() + profileStatus.slice(1)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          
+          {/* Basic Information */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+              <User className="mr-2 text-pink-600" size={24} />
+              Basic Information
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  placeholder="Your full name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  placeholder="your.email@example.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Location *
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="City, State"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Profile Image URL
+                </label>
+                <div className="relative">
+                  <Camera className="absolute left-3 top-3 text-gray-400" size={20} />
+                  <input
+                    type="url"
+                    value={formData.profileImage}
+                    onChange={(e) => handleInputChange('profileImage', e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="https://example.com/your-photo.jpg"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Professional Information */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+              <Code className="mr-2 text-pink-600" size={24} />
+              Professional Information
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role/Title *
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => handleInputChange('role', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Select your role</option>
+                  {roleOptions.map(role => (
+                    <option key={role} value={role}>{role}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Graduation Cohort *
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-3 text-gray-400" size={20} />
+                  <select
+                    value={formData.graduationCohort}
+                    onChange={(e) => handleInputChange('graduationCohort', e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select graduation year</option>
+                    {cohortOptions.map(year => (
+                      <option key={year} value={year}>Class of {year}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Bio/About *
+              </label>
+              <textarea
+                value={formData.bio}
+                onChange={(e) => handleInputChange('bio', e.target.value)}
+                rows={6}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                placeholder="Tell us about yourself, your experience, interests, and what you're passionate about..."
+                required
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                {formData.bio.length}/500 characters recommended
+              </p>
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+              <Code className="mr-2 text-pink-600" size={24} />
+              Skills & Technologies *
+            </h2>
+            
+            <div className="mb-4">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={currentSkill}
+                  onChange={(e) => setCurrentSkill(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  placeholder="Add a skill (press Enter)"
+                />
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  className="px-6 py-3 bg-pink-400 hover:bg-pink-500 text-white rounded-lg font-medium"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            {/* Current Skills */}
+            {formData.skillTags.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Your Skills:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {formData.skillTags.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm font-medium"
+                    >
+                      {skill}
+                      <button
+                        type="button"
+                        onClick={() => removeSkill(skill)}
+                        className="ml-2 text-pink-600 hover:text-pink-800"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Suggested Skills */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Suggested Skills:</h3>
+              <div className="flex flex-wrap gap-2">
+                {suggestedSkills
+                  .filter(skill => !formData.skillTags.includes(skill))
+                  .slice(0, 20)
+                  .map(skill => (
+                    <button
+                      key={skill}
+                      type="button"
+                      onClick={() => addSuggestedSkill(skill)}
+                      className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm"
+                    >
+                      + {skill}
+                    </button>
+                  ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Social Links */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Social Links</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  LinkedIn Profile
+                </label>
+                <div className="relative">
+                  <Linkedin className="absolute left-3 top-3 text-gray-400" size={20} />
+                  <input
+                    type="url"
+                    value={formData.linkedin}
+                    onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="https://linkedin.com/in/yourprofile"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  GitHub Profile
+                </label>
+                <div className="relative">
+                  <Github className="absolute left-3 top-3 text-gray-400" size={20} />
+                  <input
+                    type="url"
+                    value={formData.github}
+                    onChange={(e) => handleInputChange('github', e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="https://github.com/yourusername"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Personal Website
+                </label>
+                <div className="relative">
+                  <Globe className="absolute left-3 top-3 text-gray-400" size={20} />
+                  <input
+                    type="url"
+                    value={formData.website}
+                    onChange={(e) => handleInputChange('website', e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="https://yourwebsite.com"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start">
+                <AlertCircle className="mr-3 mt-0.5 text-blue-600 flex-shrink-0" size={20} />
+                <div className="text-sm text-blue-800">
+                  <p className="font-medium mb-1">Review Process</p>
+                  <p>
+                    {existingProfileId 
+                      ? 'Any changes to your profile will be reviewed by administrators before being published.'
+                      : 'Your profile submission will be reviewed by administrators before being published to the showcase.'
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-colors ${
+                isLoading 
+                  ? 'bg-gray-400 cursor-not-allowed text-white' 
+                  : 'bg-gradient-to-r from-pink-400 to-purple-400 hover:from-pink-500 hover:to-purple-500 text-white'
+              }`}
+            >
+              {isLoading 
+                ? (existingProfileId ? 'Updating Profile...' : 'Submitting for Approval...') 
+                : (existingProfileId ? 'Update Profile' : 'Submit for Approval')
+              }
+            </button>
+
+            {message && (
+              <div className={`mt-4 p-4 rounded-lg flex items-center ${
+                isSuccess 
+                  ? 'bg-green-50 text-green-800 border border-green-200' 
+                  : 'bg-red-50 text-red-800 border border-red-200'
+              }`}>
+                {isSuccess && <CheckCircle className="mr-2 flex-shrink-0" size={20} />}
+                <p className="text-sm">{message}</p>
+              </div>
+            )}
+          </div>
+        </form>
+      </div>
+
+      {/* Footer */}
+      <div className="bg-white border-t mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <p className="text-center text-gray-600 text-sm">
+            © 2025 Build Carolina Graduate Showcase. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ManageProfilePa
