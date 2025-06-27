@@ -295,7 +295,7 @@ function createFilterControls(data) {
 
     filterContainer.innerHTML = `
         <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Filter Results</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
             <div>
                 <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Business:</label>
                 <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
@@ -317,6 +317,8 @@ function createFilterControls(data) {
                     ${accountSizes.map(size => `<option value="${size}">${formatAccountSize(size)}</option>`).join('')}
                 </select>
             </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
             <div>
                 <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Trial Type:</label>
                 <select id="pfct-filter-trial" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
@@ -324,14 +326,12 @@ function createFilterControls(data) {
                     ${trialTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
                 </select>
             </div>
-        </div>
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-top: 15px; align-items: end;">
             <div>
                 <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
                 <input type="number" id="pfct-filter-price" placeholder="Max: $${maxPrice.toLocaleString()}" min="${minPrice}" max="${maxPrice}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                 <small style="color: #666; font-size: 11px;">Range: $${minPrice.toLocaleString()} - $${maxPrice.toLocaleString()}</small>
             </div>
-            <div>
+            <div style="display: flex; flex-direction: column; justify-content: flex-end;">
                 <button id="pfct-clear-filters" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; height: 36px;">
                     Clear Filters
                 </button>
