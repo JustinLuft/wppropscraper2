@@ -263,6 +263,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create filter controls
     // Replace the createFilterControls function with this fixed version:
 
+// Replace the createFilterControls function with this fixed version:
+
 function createFilterControls(data) {
     const filterContainer = document.createElement('div');
     filterContainer.className = 'pfct-filters';
@@ -318,7 +320,7 @@ function createFilterControls(data) {
                 </select>
             </div>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; align-items: end;">
+        <div style="display: grid; grid-template-columns: 1fr 150px 120px; gap: 15px; margin-top: 15px; align-items: start;">
             <div>
                 <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Trial Type:</label>
                 <select id="pfct-filter-trial" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
@@ -328,11 +330,12 @@ function createFilterControls(data) {
             </div>
             <div>
                 <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
-                <input type="number" id="pfct-filter-price" placeholder="Max: $${maxPrice.toLocaleString()}" min="${minPrice}" max="${maxPrice}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                <small style="color: #666; font-size: 11px;">Range: $${minPrice.toLocaleString()} - $${maxPrice.toLocaleString()}</small>
+                <input type="number" id="pfct-filter-price" placeholder="Max: $${maxPrice.toLocaleString()}" min="${minPrice}" max="${maxPrice}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px;">
+                <small style="color: #666; font-size: 10px; line-height: 1; margin-top: 2px; display: block;">$${minPrice.toLocaleString()} - $${maxPrice.toLocaleString()}</small>
             </div>
-            <div style="display: flex; align-items: flex-end;">
-                <button id="pfct-clear-filters" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; height: 36px;">
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555; opacity: 0;">Clear</label>
+                <button id="pfct-clear-filters" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 12px; white-space: nowrap;">
                     Clear Filters
                 </button>
             </div>
