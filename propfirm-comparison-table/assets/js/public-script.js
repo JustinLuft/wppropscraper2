@@ -338,7 +338,7 @@ function createFilterControls(data) {
             </div>
             <div>
                 <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
-                <input type="number" id="pfct-filter-price" placeholder="Max: ${maxPrice.toLocaleString()}" min="${minPrice}" max="${maxPrice}" style="width: 90%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px;">
+                <input type="number" id="pfct-filter-price" placeholder="Max: ${maxPrice.toLocaleString()}" min="${minPrice}" max="${maxPrice}" style="width: 95%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px;">
                 <small style="color: #666; font-size: 9px; line-height: 1; margin-top: 2px; display: block;">${minPrice.toLocaleString()} - ${maxPrice.toLocaleString()}</small>
             </div>
             <div>
