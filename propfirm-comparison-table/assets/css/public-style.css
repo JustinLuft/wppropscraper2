@@ -334,3 +334,14 @@
         border: 1px solid #000;
     }
 }
+
+/* Add this ↓↓↓ */
+.pfct-clear-filters-btn {
+    padding: 4px 10px;
+    font-size: 12px;
+    height: auto;
+    width: auto;
+    line-height: 1.2;
+    align-self: end;
+}
+
