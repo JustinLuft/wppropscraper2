@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function formatCurrency(value) {
         if (!value || value === '' || value === 'N/A') return 'N/A';
         const numValue = parseFloat(value.toString().replace(/[$,£€\s]/g, ''));
-        return isNaN(numValue) ? value : `${numValue.toLocaleString()}`;
+        return isNaN(numValue) ? value : `$${numValue.toLocaleString()}`;
     }
 
     // Format percentage values
@@ -227,6 +227,38 @@ document.addEventListener('DOMContentLoaded', function() {
         return 'N/A';
     }
 
+    // Get numeric price value from row data - FIXED VERSION
+    function getNumericPrice(row) {
+        // Try different price fields in order of preference
+        const priceFields = [
+            'funded_price',
+            'price_raw', 
+            'price',
+            'cost',
+            'fee'
+        ];
+        
+        for (let fieldName of priceFields) {
+            const price = row[fieldName];
+            if (price && price !== '' && price !== 'N/A') {
+                // Remove currency symbols, commas, and other non-numeric characters
+                const cleanPrice = price.toString().replace(/[$,£€\s]/g, '');
+                const numPrice = parseFloat(cleanPrice);
+                if (!isNaN(numPrice) && numPrice > 0) {
+                    return numPrice;
+                }
+            }
+        }
+        
+        return 0; // Default to 0 if no valid price found
+    }
+
+    // Get formatted price for display - NEW FUNCTION
+    function getFormattedPrice(row) {
+        const numPrice = getNumericPrice(row);
+        if (numPrice === 0) return 'N/A';
+        return `$${numPrice.toLocaleString()}`;
+    }
 
     // Create filter controls
     function createFilterControls(data) {
@@ -247,12 +279,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const planTypes = [...new Set(data.map(row => getPlanType(row)))].filter(val => val !== 'N/A').sort();
         
         const accountSizes = [...new Set(data.map(row => row.account_size))].filter(Boolean).sort((a, b) => {
-            const aNum = parseFloat(a.replace(/[$,K]/g, '')) * (a.includes('K') ? 1000 : 1);
-            const bNum = parseFloat(b.replace(/[$,K]/g, '')) * (b.includes('K') ? 1000 : 1);
+            const aNum = parseFloat(a.toString().replace(/[$,K]/g, '')) * (a.toString().includes('K') ? 1000 : 1);
+            const bNum = parseFloat(b.toString().replace(/[$,K]/g, '')) * (b.toString().includes('K') ? 1000 : 1);
             return aNum - bNum;
         });
         
         const trialTypes = [...new Set(data.map(row => row.trial_type))].filter(Boolean).sort();
+
+        // Get min and max prices for the price filter
+        const prices = data.map(row => getNumericPrice(row)).filter(price => price > 0);
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
 
         filterContainer.innerHTML = `
             <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Filter Results</h3>
@@ -287,7 +324,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
-                    <input type="number" id="pfct-filter-price" placeholder="Enter max price" style="width: 120px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <input type="number" id="pfct-filter-price" placeholder="Max: $${maxPrice.toLocaleString()}" min="${minPrice}" max="${maxPrice}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <small style="color: #666; font-size: 11px;">Range: $${minPrice.toLocaleString()} - $${maxPrice.toLocaleString()}</small>
                 </div>
                 <div style="display: flex; align-items: end;">
                     <button id="pfct-clear-filters" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">
@@ -303,32 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return filterContainer;
     }
 
-    // Get numeric price value from row data
-    function getNumericPrice(row) {
-        // Try different price fields in order of preference
-        const priceFields = [
-            row.funded_price,
-            row.price_raw,
-            row.price,
-            row.cost,
-            row.fee
-        ];
-        
-        for (let price of priceFields) {
-            if (price && price !== '' && price !== 'N/A') {
-                // Remove currency symbols, commas, and other non-numeric characters
-                const cleanPrice = price.toString().replace(/[$,£€\s]/g, '');
-                const numPrice = parseFloat(cleanPrice);
-                if (!isNaN(numPrice) && numPrice > 0) {
-                    return numPrice;
-                }
-            }
-        }
-        
-        return 0; // Default to 0 if no valid price found
-    }
-
-    // Apply filters to data
+    // Apply filters to data - FIXED VERSION
     function applyFilters() {
         const businessFilter = document.getElementById('pfct-filter-business')?.value || '';
         const planFilter = document.getElementById('pfct-filter-plan')?.value || '';
@@ -337,16 +350,42 @@ document.addEventListener('DOMContentLoaded', function() {
         const priceFilter = document.getElementById('pfct-filter-price')?.value || '';
 
         filteredData = allData.filter(row => {
+            // Business filter
             if (businessFilter && row.business_name !== businessFilter) return false;
+            
+            // Plan filter
             if (planFilter && getPlanType(row) !== planFilter) return false;
+            
+            // Size filter
             if (sizeFilter && row.account_size !== sizeFilter) return false;
+            
+            // Trial filter
             if (trialFilter && row.trial_type !== trialFilter) return false;
+            
+            // Price filter - FIXED
             if (priceFilter) {
                 const rowPrice = getNumericPrice(row);
                 const maxPrice = parseFloat(priceFilter);
-                if (isNaN(maxPrice) || rowPrice > maxPrice) return false;
+                // Only filter out if we have a valid max price and the row price exceeds it
+                if (!isNaN(maxPrice) && rowPrice > 0 && rowPrice > maxPrice) {
+                    return false;
+                }
             }
+            
             return true;
+        });
+
+        // Sort filtered data by price (lowest first) for better user experience
+        filteredData.sort((a, b) => {
+            const priceA = getNumericPrice(a);
+            const priceB = getNumericPrice(b);
+            
+            // Put items with no price at the end
+            if (priceA === 0 && priceB === 0) return 0;
+            if (priceA === 0) return 1;
+            if (priceB === 0) return -1;
+            
+            return priceA - priceB;
         });
 
         renderTable();
@@ -361,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Render table with current filtered data - FIXED COLUMN MAPPING
+    // Render table with current filtered data - FIXED PRICE DISPLAY
     function renderTable() {
         const tableElement = document.querySelector('.pfct-comparison-table');
         if (!tableElement) return;
@@ -375,17 +414,18 @@ document.addEventListener('DOMContentLoaded', function() {
             tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #666;">No results match your filters.</td></tr>';
             return;
         }
-        //FRONTEND DISPLAY
+
+        // FRONTEND DISPLAY - FIXED
         filteredData.forEach(row => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${row.business_name || 'N/A'}</strong></td>
                 <td>${getPlanType(row)}</td>
                 <td>${formatAccountSize(row.account_size)}</td>
-                <td>${row.profit_goal === 'N/A' ? 'N/A' : '' + row.profit_goal}</td>
+                <td>${getFormattedPrice(row)}</td>
                 <td>${row.trial_type || 'N/A'}</td>
                 <td class="pfct-trustpilot-score">${row.trustpilot_score || 'N/A'}</td>
-                <td>${row.profit_goal.toLocaleString()}</td>
+                <td>${row.profit_goal && row.profit_goal !== 'N/A' ? formatCurrency(row.profit_goal) : 'N/A'}</td>
                 <td>${row.source || 'N/A'}</td>
             `;
             tbody.appendChild(tr);
@@ -448,9 +488,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add event listeners for filters
             setupFilterListeners();
             
-            // Initial render
-            renderTable();
-            updateResultsCount();
+            // Initial render with sorting
+            applyFilters(); // This will sort and render
             
         } catch (error) {
             console.error('Error loading CSV data:', error);
@@ -495,8 +534,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
                 filteredData = [...allData];
-                renderTable();
-                updateResultsCount();
+                applyFilters(); // This will sort and render
             });
         }
     }
