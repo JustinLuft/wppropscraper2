@@ -261,85 +261,89 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Create filter controls
-    function createFilterControls(data) {
-        const filterContainer = document.createElement('div');
-        filterContainer.className = 'pfct-filters';
-        filterContainer.style.cssText = `
-            background: #f8f9fa;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
-        `;
+    // Replace the createFilterControls function with this fixed version:
 
-        // Get unique values for key filter fields
-        const businesses = [...new Set(data.map(row => row.business_name))].filter(Boolean).sort();
-        
-        // For plan types, combine plan_name and trial_type
-        const planTypes = [...new Set(data.map(row => getPlanType(row)))].filter(val => val !== 'N/A').sort();
-        
-        const accountSizes = [...new Set(data.map(row => row.account_size))].filter(Boolean).sort((a, b) => {
-            const aNum = parseFloat(a.toString().replace(/[$,K]/g, '')) * (a.toString().includes('K') ? 1000 : 1);
-            const bNum = parseFloat(b.toString().replace(/[$,K]/g, '')) * (b.toString().includes('K') ? 1000 : 1);
-            return aNum - bNum;
-        });
-        
-        const trialTypes = [...new Set(data.map(row => row.trial_type))].filter(Boolean).sort();
+function createFilterControls(data) {
+    const filterContainer = document.createElement('div');
+    filterContainer.className = 'pfct-filters';
+    filterContainer.style.cssText = `
+        background: #f8f9fa;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    `;
 
-        // Get min and max prices for the price filter
-        const prices = data.map(row => getNumericPrice(row)).filter(price => price > 0);
-        const minPrice = Math.min(...prices);
-        const maxPrice = Math.max(...prices);
+    // Get unique values for key filter fields
+    const businesses = [...new Set(data.map(row => row.business_name))].filter(Boolean).sort();
+    
+    // For plan types, combine plan_name and trial_type
+    const planTypes = [...new Set(data.map(row => getPlanType(row)))].filter(val => val !== 'N/A').sort();
+    
+    const accountSizes = [...new Set(data.map(row => row.account_size))].filter(Boolean).sort((a, b) => {
+        const aNum = parseFloat(a.toString().replace(/[$,K]/g, '')) * (a.toString().includes('K') ? 1000 : 1);
+        const bNum = parseFloat(b.toString().replace(/[$,K]/g, '')) * (b.toString().includes('K') ? 1000 : 1);
+        return aNum - bNum;
+    });
+    
+    const trialTypes = [...new Set(data.map(row => row.trial_type))].filter(Boolean).sort();
 
-        filterContainer.innerHTML = `
-            <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Filter Results</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Business:</label>
-                    <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">All Businesses</option>
-                        ${businesses.map(business => `<option value="${business}">${business}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Plan Type:</label>
-                    <select id="pfct-filter-plan" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">All Plans</option>
-                        ${planTypes.map(plan => `<option value="${plan}">${plan}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Account Size:</label>
-                    <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">All Sizes</option>
-                        ${accountSizes.map(size => `<option value="${size}">${formatAccountSize(size)}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Trial Type:</label>
-                    <select id="pfct-filter-trial" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">All Types</option>
-                        ${trialTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
-                    <input type="number" id="pfct-filter-price" placeholder="Max: $${maxPrice.toLocaleString()}" min="${minPrice}" max="${maxPrice}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <small style="color: #666; font-size: 11px;">Range: $${minPrice.toLocaleString()} - $${maxPrice.toLocaleString()}</small>
-                </div>
-                <div style="display: flex; align-items: end;">
-                    <button id="pfct-clear-filters" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">
-                        Clear Filters
-                    </button>
-                </div>
+    // Get min and max prices for the price filter
+    const prices = data.map(row => getNumericPrice(row)).filter(price => price > 0);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+
+    filterContainer.innerHTML = `
+        <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Filter Results</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Business:</label>
+                <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">All Businesses</option>
+                    ${businesses.map(business => `<option value="${business}">${business}</option>`).join('')}
+                </select>
             </div>
-            <div style="margin-top: 15px; text-align: center;">
-                <span id="pfct-results-count" style="font-weight: bold; color: #007cba;"></span>
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Plan Type:</label>
+                <select id="pfct-filter-plan" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">All Plans</option>
+                    ${planTypes.map(plan => `<option value="${plan}">${plan}</option>`).join('')}
+                </select>
             </div>
-        `;
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Account Size:</label>
+                <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">All Sizes</option>
+                    ${accountSizes.map(size => `<option value="${size}">${formatAccountSize(size)}</option>`).join('')}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Trial Type:</label>
+                <select id="pfct-filter-trial" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    <option value="">All Types</option>
+                    ${trialTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
+                </select>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-top: 15px; align-items: end;">
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
+                <input type="number" id="pfct-filter-price" placeholder="Max: $${maxPrice.toLocaleString()}" min="${minPrice}" max="${maxPrice}" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <small style="color: #666; font-size: 11px;">Range: $${minPrice.toLocaleString()} - $${maxPrice.toLocaleString()}</small>
+            </div>
+            <div>
+                <button id="pfct-clear-filters" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; height: 36px;">
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+        <div style="margin-top: 15px; text-align: center;">
+            <span id="pfct-results-count" style="font-weight: bold; color: #007cba;"></span>
+        </div>
+    `;
 
-        return filterContainer;
-    }
+    return filterContainer;
+}
 
     // Apply filters to data - FIXED VERSION
     function applyFilters() {
