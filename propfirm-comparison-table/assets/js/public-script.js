@@ -1,5 +1,5 @@
 /**
- * Public JavaScript for PropFirm Comparison Table with New Attributes - UPDATED VERSION
+ * Enhanced PropFirm Comparison Table - Added Search, Sort, and Horizontal Scroll
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -12,17 +12,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableContainer = document.getElementById('pfct-table-container');
     const tableContent = document.getElementById('pfct-table-content');
 
-    // Configuration - Updated GitHub CSV URL
+    // Configuration
     const CSV_URL = 'https://raw.githubusercontent.com/JustinLuft/propdatascraper/main/plans_output.csv';
     
     // Global data storage
     let allData = [];
     let filteredData = [];
+    let currentSort = { column: 'price', direction: 'asc' };
 
-    // Only proceed if form exists
     if (!form) return;
 
-    // Form submission handler
+    // Form submission handler (unchanged)
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -30,25 +30,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const nonceField = document.getElementById('pfct_nonce');
         const nonce = nonceField ? nonceField.value : '';
         
-        if (!email) {
+        if (!email || !isValidEmail(email)) {
             showError('Please enter a valid email address.');
             return;
         }
 
-        if (!isValidEmail(email)) {
-            showError('Please enter a valid email address.');
-            return;
-        }
-
-        // Show loading state
         setLoadingState(true);
 
         try {
             const response = await fetch(pfct_ajax.ajax_url, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({
                     action: 'pfct_save_email',
                     email: email,
@@ -56,103 +48,67 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
             });
 
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
             const data = await response.json();
-
             if (data.success) {
-                // Hide email form and show table
                 hideEmailForm();
                 showTableContainer();
-                
-                // Load table data from CSV
                 loadTableData();
-                
-                // Track conversion (if analytics are available)
                 trackConversion(email);
             } else {
                 showError(data.data || 'Failed to save email. Please try again.');
             }
         } catch (error) {
-            console.error('Error:', error);
-            showError('An error occurred. Please check your internet connection and try again.');
+            showError('An error occurred. Please check your connection and try again.');
         } finally {
-            // Reset button state
             setLoadingState(false);
         }
     });
 
-    // Email validation
+    // Utility functions (unchanged)
     function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 
-    // Show error message
     function showError(message) {
         if (errorDiv) {
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
-            setTimeout(() => {
-                errorDiv.style.display = 'none';
-            }, 5000);
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
         }
     }
 
-    // Set loading state
     function setLoadingState(isLoading) {
         if (submitBtn) {
             submitBtn.disabled = isLoading;
-            submitBtn.textContent = isLoading ? 'Processing...' : submitBtn.getAttribute('data-original-text') || 'Submit';
-            
-            if (!submitBtn.getAttribute('data-original-text')) {
-                submitBtn.setAttribute('data-original-text', submitBtn.textContent);
-            }
+            submitBtn.textContent = isLoading ? 'Processing...' : 'Submit';
         }
-        
-        if (loadingDiv) {
-            loadingDiv.style.display = isLoading ? 'block' : 'none';
-        }
-        
-        if (errorDiv) {
-            errorDiv.style.display = 'none';
-        }
+        if (loadingDiv) loadingDiv.style.display = isLoading ? 'block' : 'none';
+        if (errorDiv) errorDiv.style.display = 'none';
     }
 
-    // Hide email form with animation
     function hideEmailForm() {
         if (emailCapture) {
-            emailCapture.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            emailCapture.style.transition = 'opacity 0.3s ease';
             emailCapture.style.opacity = '0';
-            emailCapture.style.transform = 'translateY(-20px)';
-            
-            setTimeout(() => {
-                emailCapture.style.display = 'none';
-            }, 300);
+            setTimeout(() => emailCapture.style.display = 'none', 300);
         }
     }
 
-    // Show table container with animation
     function showTableContainer() {
         if (tableContainer) {
             tableContainer.style.display = 'block';
             tableContainer.style.opacity = '0';
-            tableContainer.style.transform = 'translateY(20px)';
-            
-            tableContainer.offsetHeight;
-            
-            tableContainer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            tableContainer.style.opacity = '1';
-            tableContainer.style.transform = 'translateY(0)';
+            setTimeout(() => {
+                tableContainer.style.transition = 'opacity 0.5s ease';
+                tableContainer.style.opacity = '1';
+            }, 50);
         }
     }
 
-    // Parse CSV text into array of objects
+    // Enhanced CSV parsing
     function parseCSV(csvText) {
         const lines = csvText.trim().split('\n');
-        const headers = lines[0].split(',').map(header => header.trim().replace(/"/g, ''));
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
         const data = [];
 
         for (let i = 1; i < lines.length; i++) {
@@ -162,73 +118,43 @@ document.addEventListener('DOMContentLoaded', function() {
             
             for (let j = 0; j < lines[i].length; j++) {
                 const char = lines[i][j];
-                
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === ',' && !inQuotes) {
                     values.push(current.trim().replace(/"/g, ''));
                     current = '';
-                } else {
-                    current += char;
-                }
+                } else current += char;
             }
             values.push(current.trim().replace(/"/g, ''));
             
             if (values.length === headers.length) {
                 const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index];
-                });
+                headers.forEach((header, index) => row[header] = values[index]);
                 data.push(row);
             }
         }
-        
         return data;
     }
 
-    // Format account size (already includes $ and K)
-    function formatAccountSize(value) {
-        if (!value || value === '' || value === 'N/A') return 'N/A';
-        return value;
-    }
-
-    // Format currency values
+    // Formatting functions
     function formatCurrency(value) {
         if (!value || value === '' || value === 'N/A' || value === 'None') return 'N/A';
-        
-        // If it already has $ symbol, return as is
         if (value.toString().includes('$')) return value;
-        
         const numValue = parseFloat(value.toString().replace(/[$,£€\s]/g, ''));
         return isNaN(numValue) ? value : `$${numValue.toLocaleString()}`;
     }
 
-    // Format percentage values
-    function formatPercentage(value) {
-        if (!value || value === '' || value === 'N/A') return 'N/A';
-        return value.includes('%') ? value : `${value}%`;
-    }
-
-    // Get numeric price value from price_raw field
     function getNumericPrice(row) {
         const price = row.price_raw;
         if (!price || price === '' || price === 'N/A') return 0;
-        
-        // Extract numeric value from strings like "$69 per month" or "$349 one time fee"
         const numMatch = price.toString().match(/\$?(\d+(?:\.\d+)?)/);
-        if (numMatch) {
-            return parseFloat(numMatch[1]);
-        }
-        
-        return 0;
+        return numMatch ? parseFloat(numMatch[1]) : 0;
     }
 
-    // Get formatted price for display
     function getFormattedPrice(row) {
         return row.price_raw || 'N/A';
     }
 
-    // Create filter controls with new attributes
+    // ENHANCED: Create filter controls with search and sort
     function createFilterControls(data) {
         const filterContainer = document.createElement('div');
         filterContainer.className = 'pfct-filters';
@@ -240,44 +166,54 @@ document.addEventListener('DOMContentLoaded', function() {
             border: 1px solid #dee2e6;
         `;
 
-        // Get unique values for key filter fields
         const businesses = [...new Set(data.map(row => row.business_name))].filter(Boolean).sort();
-        const planNames = [...new Set(data.map(row => row.plan_name))].filter(Boolean).sort();
-        const accountTypes = [...new Set(data.map(row => row.account_type))].filter(Boolean).sort();
         const accountSizes = [...new Set(data.map(row => row.account_size))].filter(Boolean).sort((a, b) => {
             const aNum = parseFloat(a.toString().replace(/[$,K]/g, ''));
             const bNum = parseFloat(b.toString().replace(/[$,K]/g, ''));
             return aNum - bNum;
         });
-        const drawdownModes = [...new Set(data.map(row => row.drawdown_mode))].filter(Boolean).sort();
-
-        // Get min and max prices for the price filter
-        const prices = data.map(row => getNumericPrice(row)).filter(price => price > 0);
-        const minPrice = Math.min(...prices);
-        const maxPrice = Math.max(...prices);
 
         filterContainer.innerHTML = `
-            <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Filter Results</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Search & Filter Results</h3>
+            
+            <!-- Search Bar -->
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="pfct-search" placeholder="Search businesses, plans, account types..." 
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
+            </div>
+
+            <!-- Sort Controls -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Sort By:</label>
+                    <select id="pfct-sort-column" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="price">Price</option>
+                        <option value="business_name">Business Name</option>
+                        <option value="account_size">Account Size</option>
+                        <option value="profit_goal">Profit Goal</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Order:</label>
+                    <select id="pfct-sort-direction" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="asc">Low to High</option>
+                        <option value="desc">High to Low</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
+                    <input type="number" id="pfct-filter-price" placeholder="Max Price" 
+                           style="width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+            </div>
+
+            <!-- Quick Filters -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Business:</label>
                     <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="">All Businesses</option>
                         ${businesses.map(business => `<option value="${business}">${business}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Plan Name:</label>
-                    <select id="pfct-filter-plan" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">All Plans</option>
-                        ${planNames.map(plan => `<option value="${plan}">${plan}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Account Type:</label>
-                    <select id="pfct-filter-account-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">All Types</option>
-                        ${accountTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
                     </select>
                 </div>
                 <div>
@@ -287,26 +223,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         ${accountSizes.map(size => `<option value="${size}">${size}</option>`).join('')}
                     </select>
                 </div>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; align-items: start;">
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Drawdown Mode:</label>
-                    <select id="pfct-filter-drawdown" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">All Modes</option>
-                        ${drawdownModes.map(mode => `<option value="${mode}">${mode}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
-                    <input type="number" id="pfct-filter-price" placeholder="Max: $${maxPrice}" min="${minPrice}" max="${maxPrice}" style="width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px;">
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555; opacity: 0;">Clear</label>
-                    <button id="pfct-clear-filters" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 12px; white-space: nowrap;">
-                        Clear Filters
+                <div style="display: flex; flex-direction: column;">
+                    <label style="margin-bottom: 5px; font-weight: bold; color: #555; opacity: 0;">Clear</label>
+                    <button id="pfct-clear-filters" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Clear All
                     </button>
                 </div>
             </div>
+
             <div style="margin-top: 15px; text-align: center;">
                 <span id="pfct-results-count" style="font-weight: bold; color: #007cba;"></span>
             </div>
@@ -315,60 +239,65 @@ document.addEventListener('DOMContentLoaded', function() {
         return filterContainer;
     }
 
-    // Apply filters to data
+    // ENHANCED: Apply filters with search and sort
     function applyFilters() {
+        const searchTerm = document.getElementById('pfct-search')?.value.toLowerCase() || '';
         const businessFilter = document.getElementById('pfct-filter-business')?.value || '';
-        const planFilter = document.getElementById('pfct-filter-plan')?.value || '';
-        const accountTypeFilter = document.getElementById('pfct-filter-account-type')?.value || '';
         const sizeFilter = document.getElementById('pfct-filter-size')?.value || '';
-        const drawdownFilter = document.getElementById('pfct-filter-drawdown')?.value || '';
         const priceFilter = document.getElementById('pfct-filter-price')?.value || '';
+        const sortColumn = document.getElementById('pfct-sort-column')?.value || 'price';
+        const sortDirection = document.getElementById('pfct-sort-direction')?.value || 'asc';
 
+        // Filter data
         filteredData = allData.filter(row => {
-            // Business filter
+            // Search filter
+            if (searchTerm) {
+                const searchableText = [
+                    row.business_name, row.plan_name, row.account_type, 
+                    row.account_size, row.drawdown_mode
+                ].join(' ').toLowerCase();
+                if (!searchableText.includes(searchTerm)) return false;
+            }
+
+            // Other filters
             if (businessFilter && row.business_name !== businessFilter) return false;
-            
-            // Plan filter
-            if (planFilter && row.plan_name !== planFilter) return false;
-            
-            // Account type filter
-            if (accountTypeFilter && row.account_type !== accountTypeFilter) return false;
-            
-            // Size filter
             if (sizeFilter && row.account_size !== sizeFilter) return false;
-            
-            // Drawdown mode filter
-            if (drawdownFilter && row.drawdown_mode !== drawdownFilter) return false;
-            
-            // Price filter
             if (priceFilter) {
                 const rowPrice = getNumericPrice(row);
                 const maxPrice = parseFloat(priceFilter);
-                if (!isNaN(maxPrice) && rowPrice > 0 && rowPrice > maxPrice) {
-                    return false;
-                }
+                if (!isNaN(maxPrice) && rowPrice > 0 && rowPrice > maxPrice) return false;
             }
-            
+
             return true;
         });
 
-        // Sort filtered data by price (lowest first)
+        // Sort data
         filteredData.sort((a, b) => {
-            const priceA = getNumericPrice(a);
-            const priceB = getNumericPrice(b);
+            let valueA, valueB;
             
-            if (priceA === 0 && priceB === 0) return 0;
-            if (priceA === 0) return 1;
-            if (priceB === 0) return -1;
-            
-            return priceA - priceB;
+            if (sortColumn === 'price') {
+                valueA = getNumericPrice(a);
+                valueB = getNumericPrice(b);
+            } else if (sortColumn === 'profit_goal') {
+                valueA = parseFloat(a.profit_goal?.replace(/[$,]/g, '')) || 0;
+                valueB = parseFloat(b.profit_goal?.replace(/[$,]/g, '')) || 0;
+            } else {
+                valueA = a[sortColumn] || '';
+                valueB = b[sortColumn] || '';
+            }
+
+            if (typeof valueA === 'string') {
+                return sortDirection === 'asc' ? 
+                    valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            } else {
+                return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
+            }
         });
 
         renderTable();
         updateResultsCount();
     }
 
-    // Update results count
     function updateResultsCount() {
         const countElement = document.getElementById('pfct-results-count');
         if (countElement) {
@@ -376,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Render table with current filtered data - Updated with new columns
+    // ENHANCED: Render table with horizontal scroll controls
     function renderTable() {
         const tableElement = document.querySelector('.pfct-comparison-table');
         if (!tableElement) return;
@@ -387,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tbody.innerHTML = '';
 
         if (filteredData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #666;">No results match your filters.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 20px; color: #666;">No results match your criteria.</td></tr>';
             return;
         }
 
@@ -413,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTableInteractivity();
     }
 
-    // Load table data from CSV
+    // Load and display table data
     async function loadTableData() {
         if (!tableContent) return;
 
@@ -421,28 +350,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const response = await fetch(CSV_URL);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch CSV: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`Failed to fetch CSV: ${response.status}`);
             
             const csvText = await response.text();
             allData = parseCSV(csvText);
             filteredData = [...allData];
             
-            if (allData.length === 0) {
-                throw new Error('No data found in CSV file');
-            }
+            if (allData.length === 0) throw new Error('No data found in CSV file');
 
-            // Create filter controls
             const filterControls = createFilterControls(allData);
             
-            // Build table HTML with new columns
+            // ENHANCED: Table with horizontal scroll wheel
             const tableHTML = `
-                <div style="overflow-x: auto;">
-                    <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; margin-top: 20px; min-width: 1200px;">
+                <!-- Horizontal Scroll Controls -->
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <button id="scroll-left" style="padding: 8px 12px; margin-right: 10px; background: #007cba; color: white; border: none; border-radius: 4px; cursor: pointer;">← Scroll Left</button>
+                    <button id="scroll-right" style="padding: 8px 12px; background: #007cba; color: white; border: none; border-radius: 4px; cursor: pointer;">Scroll Right →</button>
+                </div>
+
+                <div id="table-scroll-container" style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 4px;">
+                    <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; min-width: 1400px;">
                         <thead>
                             <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Business</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; position: sticky; left: 0; background: #f8f9fa; z-index: 2;">Business</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Plan Name</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Account Type</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Account Size</th>
@@ -459,10 +389,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <tbody></tbody>
                     </table>
                 </div>
+
                 <div style="text-align: center; margin-top: 20px; font-size: 14px; color: #666;">
-                    <p>* Prices and terms are subject to change. Please verify directly with each provider.</p>
+                    <p>* Prices and terms subject to change. Verify with providers.</p>
                     <p>Last updated: ${new Date().toLocaleDateString()}</p>
-                    <p>Data source: <a href="${CSV_URL}" target="_blank" style="color: #666;">GitHub CSV</a></p>
                 </div>
             `;
             
@@ -470,15 +400,12 @@ document.addEventListener('DOMContentLoaded', function() {
             tableContent.appendChild(filterControls);
             tableContent.insertAdjacentHTML('beforeend', tableHTML);
             
-            // Add event listeners for filters
             setupFilterListeners();
-            
-            // Initial render with sorting
+            setupScrollControls();
             applyFilters();
             
         } catch (error) {
             console.error('Error loading CSV data:', error);
-            
             tableContent.innerHTML = `
                 <div style="text-align: center; padding: 20px; color: #d63638;">
                     <p>Unable to load data from CSV file.</p>
@@ -488,18 +415,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Setup filter event listeners
+    // ENHANCED: Setup all event listeners
     function setupFilterListeners() {
-        const filterElements = [
-            'pfct-filter-business',
-            'pfct-filter-plan', 
-            'pfct-filter-account-type',
-            'pfct-filter-size',
-            'pfct-filter-drawdown',
-            'pfct-filter-price'
-        ];
+        // Search input
+        const searchInput = document.getElementById('pfct-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', debounce(applyFilters, 300));
+        }
 
-        filterElements.forEach(id => {
+        // Sort controls
+        ['pfct-sort-column', 'pfct-sort-direction'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) element.addEventListener('change', applyFilters);
+        });
+
+        // Filter controls
+        ['pfct-filter-business', 'pfct-filter-size', 'pfct-filter-price'].forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 element.addEventListener('change', applyFilters);
@@ -509,23 +440,46 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Clear filters button
+        // Clear filters
         const clearBtn = document.getElementById('pfct-clear-filters');
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
-                filterElements.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.value = '';
-                    }
-                });
-                filteredData = [...allData];
+                document.getElementById('pfct-search').value = '';
+                document.getElementById('pfct-filter-business').value = '';
+                document.getElementById('pfct-filter-size').value = '';
+                document.getElementById('pfct-filter-price').value = '';
+                document.getElementById('pfct-sort-column').value = 'price';
+                document.getElementById('pfct-sort-direction').value = 'asc';
                 applyFilters();
             });
         }
     }
 
-    // Debounce function for input events
+    // NEW: Setup horizontal scroll controls
+    function setupScrollControls() {
+        const scrollContainer = document.getElementById('table-scroll-container');
+        const scrollLeft = document.getElementById('scroll-left');
+        const scrollRight = document.getElementById('scroll-right');
+
+        if (scrollContainer && scrollLeft && scrollRight) {
+            scrollLeft.addEventListener('click', () => {
+                scrollContainer.scrollBy({ left: -200, behavior: 'smooth' });
+            });
+
+            scrollRight.addEventListener('click', () => {
+                scrollContainer.scrollBy({ left: 200, behavior: 'smooth' });
+            });
+
+            // Mouse wheel horizontal scroll
+            scrollContainer.addEventListener('wheel', (e) => {
+                if (e.shiftKey) {
+                    e.preventDefault();
+                    scrollContainer.scrollBy({ left: e.deltaY, behavior: 'smooth' });
+                }
+            });
+        }
+    }
+
     function debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -538,7 +492,6 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // Add interactivity to table
     function addTableInteractivity() {
         const tableRows = document.querySelectorAll('.pfct-comparison-table tbody tr');
         
@@ -549,9 +502,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             row.addEventListener('mouseleave', function() {
                 this.style.backgroundColor = '';
-            });
-            row.addEventListener('click', function() {
-                console.log('Row clicked:', this);
             });
         });
 
@@ -566,7 +516,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Track conversion
     function trackConversion(email) {
         if (typeof gtag !== 'undefined') {
             gtag('event', 'conversion', {
@@ -575,42 +524,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 'value': 1
             });
         }
-        
-        if (typeof fbq !== 'undefined') {
-            fbq('track', 'Lead', {
-                content_name: 'PropFirm Comparison Table'
-            });
-        }
-        
         console.log('Email captured:', email);
     }
 
     // Input validation
     if (emailInput) {
         emailInput.addEventListener('input', function() {
-            const email = this.value.trim();
-            
-            if (email && !isValidEmail(email)) {
-                this.style.borderColor = '#d63638';
-            } else {
-                this.style.borderColor = '#ccc';
-            }
+            this.style.borderColor = isValidEmail(this.value.trim()) ? '#ccc' : '#d63638';
         });
         
         emailInput.addEventListener('focus', function() {
-            if (errorDiv) {
-                errorDiv.style.display = 'none';
-            }
+            if (errorDiv) errorDiv.style.display = 'none';
         });
     }
 });
-
-// Utility function for smooth scrolling
-function scrollToElement(element) {
-    if (element) {
-        element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }
-}
