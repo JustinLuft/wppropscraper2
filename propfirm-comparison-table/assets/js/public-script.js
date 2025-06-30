@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; min-width: 1400px;">
                         <thead>
                             <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; position: sticky; left: 0; background: #000000 z-index: 2;">Business</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Business</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Plan Name</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Account Type</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Account Size</th>
