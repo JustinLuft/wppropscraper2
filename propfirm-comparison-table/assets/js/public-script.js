@@ -1,5 +1,5 @@
 /**
- * Public JavaScript for PropFirm Comparison Table with Filtering - FIXED VERSION
+ * Public JavaScript for PropFirm Comparison Table with New Attributes - UPDATED VERSION
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableContainer = document.getElementById('pfct-table-container');
     const tableContent = document.getElementById('pfct-table-content');
 
-    // Configuration - Your GitHub CSV URL
-    const CSV_URL = 'https://raw.githubusercontent.com/JustinLuft/propdatascraper/refs/heads/main/combined_data.csv';
+    // Configuration - Updated GitHub CSV URL
+    const CSV_URL = 'https://raw.githubusercontent.com/JustinLuft/propdatascraper/main/plans_output.csv';
     
     // Global data storage
     let allData = [];
@@ -186,22 +186,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return data;
     }
 
-    // Format account size to show currency with K suffix (e.g. "$25K", "$50K", "$100K")
+    // Format account size (already includes $ and K)
     function formatAccountSize(value) {
         if (!value || value === '' || value === 'N/A') return 'N/A';
-        
-        // Remove any existing formatting
-        const cleanValue = value.toString().replace(/[$,]/g, '');
-        const numValue = parseFloat(cleanValue);
-        
-        if (isNaN(numValue)) return value;
-        
-        return `$${numValue}K`;
+        return value;
     }
 
     // Format currency values
     function formatCurrency(value) {
-        if (!value || value === '' || value === 'N/A') return 'N/A';
+        if (!value || value === '' || value === 'N/A' || value === 'None') return 'N/A';
+        
+        // If it already has $ symbol, return as is
+        if (value.toString().includes('$')) return value;
+        
         const numValue = parseFloat(value.toString().replace(/[$,£€\s]/g, ''));
         return isNaN(numValue) ? value : `$${numValue.toLocaleString()}`;
     }
@@ -212,154 +209,119 @@ document.addEventListener('DOMContentLoaded', function() {
         return value.includes('%') ? value : `${value}%`;
     }
 
-    // Get plan type from data - prioritize trial_type, fall back to plan_name
-    function getPlanType(row) {
-        // Check if we have valid trial type
-        if (row.trial_type && row.trial_type !== '' && row.trial_type !== 'N/A') {
-            return row.trial_type;
-        }
-
-        // Fall back to plan name
-        if (row.plan_name && row.plan_name !== '' && row.plan_name !== 'N/A') {
-            return row.plan_name;
-        }
-
-        return 'N/A';
-    }
-
-    // Get numeric price value from row data - FIXED VERSION
+    // Get numeric price value from price_raw field
     function getNumericPrice(row) {
-        // Try different price fields in order of preference
-        const priceFields = [
-            'funded_price',
-            'price_raw', 
-            'price',
-            'cost',
-            'fee'
-        ];
+        const price = row.price_raw;
+        if (!price || price === '' || price === 'N/A') return 0;
         
-        for (let fieldName of priceFields) {
-            const price = row[fieldName];
-            if (price && price !== '' && price !== 'N/A') {
-                // Remove currency symbols, commas, and other non-numeric characters
-                const cleanPrice = price.toString().replace(/[$,£€\s]/g, '');
-                const numPrice = parseFloat(cleanPrice);
-                if (!isNaN(numPrice) && numPrice > 0) {
-                    return numPrice;
-                }
-            }
+        // Extract numeric value from strings like "$69 per month" or "$349 one time fee"
+        const numMatch = price.toString().match(/\$?(\d+(?:\.\d+)?)/);
+        if (numMatch) {
+            return parseFloat(numMatch[1]);
         }
         
-        return 0; // Default to 0 if no valid price found
+        return 0;
     }
 
-    // Get formatted price for display - NEW FUNCTION
+    // Get formatted price for display
     function getFormattedPrice(row) {
-        const numPrice = getNumericPrice(row);
-        if (numPrice === 0) return 'N/A';
-        return `$${numPrice.toLocaleString()}`;
+        return row.price_raw || 'N/A';
     }
 
-    // Create filter controls
-    // Replace the createFilterControls function with this fixed version:
+    // Create filter controls with new attributes
+    function createFilterControls(data) {
+        const filterContainer = document.createElement('div');
+        filterContainer.className = 'pfct-filters';
+        filterContainer.style.cssText = `
+            background: #f8f9fa;
+            padding: 18px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        `;
 
-// Replace the createFilterControls function with this fixed version:
+        // Get unique values for key filter fields
+        const businesses = [...new Set(data.map(row => row.business_name))].filter(Boolean).sort();
+        const planNames = [...new Set(data.map(row => row.plan_name))].filter(Boolean).sort();
+        const accountTypes = [...new Set(data.map(row => row.account_type))].filter(Boolean).sort();
+        const accountSizes = [...new Set(data.map(row => row.account_size))].filter(Boolean).sort((a, b) => {
+            const aNum = parseFloat(a.toString().replace(/[$,K]/g, ''));
+            const bNum = parseFloat(b.toString().replace(/[$,K]/g, ''));
+            return aNum - bNum;
+        });
+        const drawdownModes = [...new Set(data.map(row => row.drawdown_mode))].filter(Boolean).sort();
 
-// Replace the createFilterControls function with this fixed version:
+        // Get min and max prices for the price filter
+        const prices = data.map(row => getNumericPrice(row)).filter(price => price > 0);
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
 
-// Replace the createFilterControls function with this fixed version:
-
-// Replace the createFilterControls function with this fixed version:
-
-// Replace the createFilterControls function with this fixed version:
-
-function createFilterControls(data) {
-    const filterContainer = document.createElement('div');
-    filterContainer.className = 'pfct-filters';
-    filterContainer.style.cssText = `
-        background: #f8f9fa;
-        padding: 18px;
-        margin-bottom: 20px;
-        border-radius: 8px;
-        border: 1px solid #dee2e6;
-    `;
-
-    // Get unique values for key filter fields
-    const businesses = [...new Set(data.map(row => row.business_name))].filter(Boolean).sort();
-    
-    // For plan types, combine plan_name and trial_type
-    const planTypes = [...new Set(data.map(row => getPlanType(row)))].filter(val => val !== 'N/A').sort();
-    
-    const accountSizes = [...new Set(data.map(row => row.account_size))].filter(Boolean).sort((a, b) => {
-        const aNum = parseFloat(a.toString().replace(/[$,K]/g, '')) * (a.toString().includes('K') ? 1000 : 1);
-        const bNum = parseFloat(b.toString().replace(/[$,K]/g, '')) * (b.toString().includes('K') ? 1000 : 1);
-        return aNum - bNum;
-    });
-    
-    const trialTypes = [...new Set(data.map(row => row.trial_type))].filter(Boolean).sort();
-
-    // Get min and max prices for the price filter
-    const prices = data.map(row => getNumericPrice(row)).filter(price => price > 0);
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-
-    filterContainer.innerHTML = `
-        <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Filter Results</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Business:</label>
-                <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <option value="">All Businesses</option>
-                    ${businesses.map(business => `<option value="${business}">${business}</option>`).join('')}
-                </select>
+        filterContainer.innerHTML = `
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Filter Results</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Business:</label>
+                    <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">All Businesses</option>
+                        ${businesses.map(business => `<option value="${business}">${business}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Plan Name:</label>
+                    <select id="pfct-filter-plan" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">All Plans</option>
+                        ${planNames.map(plan => `<option value="${plan}">${plan}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Account Type:</label>
+                    <select id="pfct-filter-account-type" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">All Types</option>
+                        ${accountTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Account Size:</label>
+                    <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">All Sizes</option>
+                        ${accountSizes.map(size => `<option value="${size}">${size}</option>`).join('')}
+                    </select>
+                </div>
             </div>
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Plan Type:</label>
-                <select id="pfct-filter-plan" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <option value="">All Plans</option>
-                    ${planTypes.map(plan => `<option value="${plan}">${plan}</option>`).join('')}
-                </select>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; align-items: start;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Drawdown Mode:</label>
+                    <select id="pfct-filter-drawdown" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">All Modes</option>
+                        ${drawdownModes.map(mode => `<option value="${mode}">${mode}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
+                    <input type="number" id="pfct-filter-price" placeholder="Max: $${maxPrice}" min="${minPrice}" max="${maxPrice}" style="width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555; opacity: 0;">Clear</label>
+                    <button id="pfct-clear-filters" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 12px; white-space: nowrap;">
+                        Clear Filters
+                    </button>
+                </div>
             </div>
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Account Size:</label>
-                <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <option value="">All Sizes</option>
-                    ${accountSizes.map(size => `<option value="${size}">${formatAccountSize(size)}</option>`).join('')}
-                </select>
+            <div style="margin-top: 15px; text-align: center;">
+                <span id="pfct-results-count" style="font-weight: bold; color: #007cba;"></span>
             </div>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; align-items: start;">
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Trial Type:</label>
-                <select id="pfct-filter-trial" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <option value="">All Types</option>
-                    ${trialTypes.map(type => `<option value="${type}">${type}</option>`).join('')}
-                </select>
-            </div>
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
-                <input type="number" id="pfct-filter-price" placeholder="Max: ${maxPrice.toLocaleString()}" min="${minPrice}" max="${maxPrice}" style="width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px;">
-            </div>
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555; opacity: 0;">Clear</label>
-                <button id="pfct-clear-filters" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 12px; white-space: nowrap;">
-                    Clear Filters
-                </button>
-            </div>
-        </div>
-        <div style="margin-top: 15px; text-align: center;">
-            <span id="pfct-results-count" style="font-weight: bold; color: #007cba;"></span>
-        </div>
-    `;
+        `;
 
-    return filterContainer;
-}
-    // Apply filters to data - FIXED VERSION
+        return filterContainer;
+    }
+
+    // Apply filters to data
     function applyFilters() {
         const businessFilter = document.getElementById('pfct-filter-business')?.value || '';
         const planFilter = document.getElementById('pfct-filter-plan')?.value || '';
+        const accountTypeFilter = document.getElementById('pfct-filter-account-type')?.value || '';
         const sizeFilter = document.getElementById('pfct-filter-size')?.value || '';
-        const trialFilter = document.getElementById('pfct-filter-trial')?.value || '';
+        const drawdownFilter = document.getElementById('pfct-filter-drawdown')?.value || '';
         const priceFilter = document.getElementById('pfct-filter-price')?.value || '';
 
         filteredData = allData.filter(row => {
@@ -367,19 +329,21 @@ function createFilterControls(data) {
             if (businessFilter && row.business_name !== businessFilter) return false;
             
             // Plan filter
-            if (planFilter && getPlanType(row) !== planFilter) return false;
+            if (planFilter && row.plan_name !== planFilter) return false;
+            
+            // Account type filter
+            if (accountTypeFilter && row.account_type !== accountTypeFilter) return false;
             
             // Size filter
             if (sizeFilter && row.account_size !== sizeFilter) return false;
             
-            // Trial filter
-            if (trialFilter && row.trial_type !== trialFilter) return false;
+            // Drawdown mode filter
+            if (drawdownFilter && row.drawdown_mode !== drawdownFilter) return false;
             
-            // Price filter - FIXED
+            // Price filter
             if (priceFilter) {
                 const rowPrice = getNumericPrice(row);
                 const maxPrice = parseFloat(priceFilter);
-                // Only filter out if we have a valid max price and the row price exceeds it
                 if (!isNaN(maxPrice) && rowPrice > 0 && rowPrice > maxPrice) {
                     return false;
                 }
@@ -388,12 +352,11 @@ function createFilterControls(data) {
             return true;
         });
 
-        // Sort filtered data by price (lowest first) for better user experience
+        // Sort filtered data by price (lowest first)
         filteredData.sort((a, b) => {
             const priceA = getNumericPrice(a);
             const priceB = getNumericPrice(b);
             
-            // Put items with no price at the end
             if (priceA === 0 && priceB === 0) return 0;
             if (priceA === 0) return 1;
             if (priceB === 0) return -1;
@@ -413,7 +376,7 @@ function createFilterControls(data) {
         }
     }
 
-    // Render table with current filtered data - FIXED PRICE DISPLAY
+    // Render table with current filtered data - Updated with new columns
     function renderTable() {
         const tableElement = document.querySelector('.pfct-comparison-table');
         if (!tableElement) return;
@@ -428,18 +391,21 @@ function createFilterControls(data) {
             return;
         }
 
-        // FRONTEND DISPLAY - FIXED
         filteredData.forEach(row => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${row.business_name || 'N/A'}</strong></td>
-                <td>${getPlanType(row)}</td>
-                <td>${formatAccountSize(row.account_size)}</td>
+                <td>${row.plan_name || 'N/A'}</td>
+                <td>${row.account_type || 'N/A'}</td>
+                <td>${row.account_size || 'N/A'}</td>
                 <td>${getFormattedPrice(row)}</td>
-                <td>${row.trial_type || 'N/A'}</td>
-                <td class="pfct-trustpilot-score">${row.trustpilot_score || 'N/A'}</td>
-                <td>${row.profit_goal && row.profit_goal !== 'N/A' ? formatCurrency(row.profit_goal) : 'N/A'}</td>
-                <td>${row.source || 'N/A'}</td>
+                <td>${formatCurrency(row.profit_goal)}</td>
+                <td>${formatCurrency(row.trailing_drawdown)}</td>
+                <td>${formatCurrency(row.daily_loss_limit)}</td>
+                <td>${formatCurrency(row.activation_fee)}</td>
+                <td>${formatCurrency(row.reset_fee)}</td>
+                <td>${row.drawdown_mode || 'N/A'}</td>
+                <td class="pfct-discount-code">${row.discount_code || 'N/A'}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -470,23 +436,29 @@ function createFilterControls(data) {
             // Create filter controls
             const filterControls = createFilterControls(allData);
             
-            // Build table HTML
+            // Build table HTML with new columns
             const tableHTML = `
-                <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                    <thead>
-                        <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Business</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Plan</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Account Size</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Price</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Trial Type</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Trustpilot</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Profit Goal</th>
-                            <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6;">Source</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; margin-top: 20px; min-width: 1200px;">
+                        <thead>
+                            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Business</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Plan Name</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Account Type</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Account Size</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Price</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Profit Goal</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Trailing Drawdown</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Daily Loss Limit</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Activation Fee</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Reset Fee</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Drawdown Mode</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Discount Code</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
                 <div style="text-align: center; margin-top: 20px; font-size: 14px; color: #666;">
                     <p>* Prices and terms are subject to change. Please verify directly with each provider.</p>
                     <p>Last updated: ${new Date().toLocaleDateString()}</p>
@@ -502,7 +474,7 @@ function createFilterControls(data) {
             setupFilterListeners();
             
             // Initial render with sorting
-            applyFilters(); // This will sort and render
+            applyFilters();
             
         } catch (error) {
             console.error('Error loading CSV data:', error);
@@ -521,8 +493,9 @@ function createFilterControls(data) {
         const filterElements = [
             'pfct-filter-business',
             'pfct-filter-plan', 
+            'pfct-filter-account-type',
             'pfct-filter-size',
-            'pfct-filter-trial',
+            'pfct-filter-drawdown',
             'pfct-filter-price'
         ];
 
@@ -547,7 +520,7 @@ function createFilterControls(data) {
                     }
                 });
                 filteredData = [...allData];
-                applyFilters(); // This will sort and render
+                applyFilters();
             });
         }
     }
@@ -580,6 +553,16 @@ function createFilterControls(data) {
             row.addEventListener('click', function() {
                 console.log('Row clicked:', this);
             });
+        });
+
+        // Highlight discount codes
+        const discountCells = document.querySelectorAll('.pfct-discount-code');
+        discountCells.forEach(cell => {
+            if (cell.textContent !== 'N/A' && cell.textContent.trim() !== '') {
+                cell.style.backgroundColor = '#e7f3ff';
+                cell.style.fontWeight = 'bold';
+                cell.style.color = '#0066cc';
+            }
         });
     }
 
