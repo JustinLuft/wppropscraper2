@@ -364,15 +364,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const tableHTML = `
                 <!-- Horizontal Scroll Controls -->
                 <div style="text-align: center; margin-bottom: 10px;">
-                    <button id="scroll-left" style="padding: 8px 12px; margin-right: 10px; background: #007cba; color: white; border: none; border-radius: 4px; cursor: pointer;">← Scroll Left</button>
-                    <button id="scroll-right" style="padding: 8px 12px; background: #007cba; color: white; border: none; border-radius: 4px; cursor: pointer;">Scroll Right →</button>
+                    <button id="scroll-left" style="padding: 8px 12px; margin-right: 10px; background: #115bff; color: white; border: none; border-radius: 4px; cursor: pointer;">← Scroll Left</button>
+                    <button id="scroll-right" style="padding: 8px 12px; background: #115bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Scroll Right →</button>
                 </div>
 
                 <div id="table-scroll-container" style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 4px;">
                     <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; min-width: 1400px;">
                         <thead>
                             <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; position: sticky; left: 0; background: #f8f9fa; z-index: 2;">Business</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; position: sticky; left: 0; background: #000000 z-index: 2;">Business</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Plan Name</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Account Type</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Account Size</th>
