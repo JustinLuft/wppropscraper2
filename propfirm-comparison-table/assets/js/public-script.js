@@ -1,5 +1,5 @@
 /**
- * Enhanced PropFirm Comparison Table - Added Search, Sort, and Horizontal Scroll
+ * Enhanced PropFirm Comparison Table - Added Search, Sort, Horizontal Scroll, and Trustpilot Score
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -143,6 +143,33 @@ document.addEventListener('DOMContentLoaded', function() {
         return isNaN(numValue) ? value : `$${numValue.toLocaleString()}`;
     }
 
+    // NEW: Format Trustpilot score with visual enhancement
+    function formatTrustpilotScore(score) {
+        if (!score || score === '' || score === 'N/A') return 'N/A';
+        
+        const numScore = parseFloat(score);
+        if (isNaN(numScore)) return score;
+        
+        // Create star rating visual
+        const fullStars = Math.floor(numScore);
+        const hasHalfStar = numScore % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        
+        let stars = '★'.repeat(fullStars);
+        if (hasHalfStar) stars += '☆';
+        stars += '☆'.repeat(emptyStars);
+        
+        // Color coding based on score
+        let color = '#999'; // Default gray
+        if (numScore >= 4.5) color = '#00B67A'; // Excellent - Green
+        else if (numScore >= 4.0) color = '#73CF11'; // Great - Light Green  
+        else if (numScore >= 3.5) color = '#FF8C00'; // Good - Orange
+        else if (numScore >= 2.5) color = '#FF6D2E'; // Poor - Red Orange
+        else color = '#FF3722'; // Bad - Red
+        
+        return `<span style="color: ${color}; font-weight: bold;">${numScore.toFixed(1)} ${stars}</span>`;
+    }
+
     function getNumericPrice(row) {
         const price = row.price_raw;
         if (!price || price === '' || price === 'N/A') return 0;
@@ -154,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return row.price_raw || 'N/A';
     }
 
-    // ENHANCED: Create filter controls with search and sort
+    // ENHANCED: Create filter controls with search and sort (updated with Trustpilot)
     function createFilterControls(data) {
         const filterContainer = document.createElement('div');
         filterContainer.className = 'pfct-filters';
@@ -191,6 +218,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <option value="business_name">Business Name</option>
                         <option value="account_size">Account Size</option>
                         <option value="profit_goal">Profit Goal</option>
+                        <option value="trustpilot_score">Trustpilot Score</option>
                     </select>
                 </div>
                 <div>
@@ -208,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <!-- Quick Filters -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Business:</label>
                     <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
@@ -221,6 +249,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="">All Sizes</option>
                         ${accountSizes.map(size => `<option value="${size}">${size}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Min Rating:</label>
+                    <select id="pfct-filter-rating" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">All Ratings</option>
+                        <option value="4.5">4.5+ Stars</option>
+                        <option value="4.0">4.0+ Stars</option>
+                        <option value="3.5">3.5+ Stars</option>
+                        <option value="3.0">3.0+ Stars</option>
                     </select>
                 </div>
                 <div style="display: flex; flex-direction: column;">
@@ -239,12 +277,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return filterContainer;
     }
 
-    // ENHANCED: Apply filters with search and sort
+    // ENHANCED: Apply filters with search, sort, and Trustpilot rating
     function applyFilters() {
         const searchTerm = document.getElementById('pfct-search')?.value.toLowerCase() || '';
         const businessFilter = document.getElementById('pfct-filter-business')?.value || '';
         const sizeFilter = document.getElementById('pfct-filter-size')?.value || '';
         const priceFilter = document.getElementById('pfct-filter-price')?.value || '';
+        const ratingFilter = document.getElementById('pfct-filter-rating')?.value || '';
         const sortColumn = document.getElementById('pfct-sort-column')?.value || 'price';
         const sortDirection = document.getElementById('pfct-sort-direction')?.value || 'asc';
 
@@ -268,6 +307,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!isNaN(maxPrice) && rowPrice > 0 && rowPrice > maxPrice) return false;
             }
 
+            // NEW: Trustpilot rating filter
+            if (ratingFilter) {
+                const rowRating = parseFloat(row.trustpilot_score);
+                const minRating = parseFloat(ratingFilter);
+                if (isNaN(rowRating) || rowRating < minRating) return false;
+            }
+
             return true;
         });
 
@@ -281,6 +327,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (sortColumn === 'profit_goal') {
                 valueA = parseFloat(a.profit_goal?.replace(/[$,]/g, '')) || 0;
                 valueB = parseFloat(b.profit_goal?.replace(/[$,]/g, '')) || 0;
+            } else if (sortColumn === 'trustpilot_score') {
+                valueA = parseFloat(a.trustpilot_score) || 0;
+                valueB = parseFloat(b.trustpilot_score) || 0;
             } else {
                 valueA = a[sortColumn] || '';
                 valueB = b[sortColumn] || '';
@@ -305,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ENHANCED: Render table with horizontal scroll controls
+    // ENHANCED: Render table with Trustpilot score
     function renderTable() {
         const tableElement = document.querySelector('.pfct-comparison-table');
         if (!tableElement) return;
@@ -316,7 +365,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tbody.innerHTML = '';
 
         if (filteredData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 20px; color: #666;">No results match your criteria.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 20px; color: #666;">No results match your criteria.</td></tr>';
             return;
         }
 
@@ -335,6 +384,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${formatCurrency(row.reset_fee)}</td>
                 <td>${row.drawdown_mode || 'N/A'}</td>
                 <td class="pfct-discount-code">${row.discount_code || 'N/A'}</td>
+                <td class="pfct-trustpilot">${formatTrustpilotScore(row.trustpilot_score)}</td>
+                <td class="pfct-source-link">${row.source_url ? `<a href="${row.source_url}" target="_blank" style="color: #007cba; text-decoration: none;">Visit Site</a>` : 'N/A'}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -360,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const filterControls = createFilterControls(allData);
             
-            // ENHANCED: Table with horizontal scroll wheel
+            // ENHANCED: Table with Trustpilot score and source URL
             const tableHTML = `
                 <!-- Horizontal Scroll Controls -->
                 <div style="text-align: center; margin-bottom: 10px;">
@@ -369,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
 
                 <div id="table-scroll-container" style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 4px;">
-                    <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; min-width: 1400px;">
+                    <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; min-width: 1600px;">
                         <thead>
                             <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Business</th>
@@ -384,6 +435,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Reset Fee</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Drawdown Mode</th>
                                 <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Discount Code</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 130px;">Trustpilot Rating</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Visit Site</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -392,6 +445,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <div style="text-align: center; margin-top: 20px; font-size: 14px; color: #666;">
                     <p>* Prices and terms subject to change. Verify with providers.</p>
+                    <p>★ = Trustpilot ratings updated regularly</p>
                     <p>Last updated: ${new Date().toLocaleDateString()}</p>
                 </div>
             `;
@@ -415,7 +469,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ENHANCED: Setup all event listeners
+    // ENHANCED: Setup all event listeners (updated with rating filter)
     function setupFilterListeners() {
         // Search input
         const searchInput = document.getElementById('pfct-search');
@@ -429,8 +483,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (element) element.addEventListener('change', applyFilters);
         });
 
-        // Filter controls
-        ['pfct-filter-business', 'pfct-filter-size', 'pfct-filter-price'].forEach(id => {
+        // Filter controls (updated with rating filter)
+        ['pfct-filter-business', 'pfct-filter-size', 'pfct-filter-price', 'pfct-filter-rating'].forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 element.addEventListener('change', applyFilters);
@@ -440,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Clear filters
+        // Clear filters (updated)
         const clearBtn = document.getElementById('pfct-clear-filters');
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
@@ -448,6 +502,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('pfct-filter-business').value = '';
                 document.getElementById('pfct-filter-size').value = '';
                 document.getElementById('pfct-filter-price').value = '';
+                document.getElementById('pfct-filter-rating').value = '';
                 document.getElementById('pfct-sort-column').value = 'price';
                 document.getElementById('pfct-sort-direction').value = 'asc';
                 applyFilters();
@@ -455,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // NEW: Setup horizontal scroll controls
+    // Setup horizontal scroll controls (unchanged)
     function setupScrollControls() {
         const scrollContainer = document.getElementById('table-scroll-container');
         const scrollLeft = document.getElementById('scroll-left');
@@ -492,6 +547,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    // ENHANCED: Table interactivity with Trustpilot styling
     function addTableInteractivity() {
         const tableRows = document.querySelectorAll('.pfct-comparison-table tbody tr');
         
@@ -514,6 +570,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 cell.style.color = '#0066cc';
             }
         });
+
+        // Style Trustpilot cells
+        const trustpilotCells = document.querySelectorAll('.pfct-trustpilot');
+        trustpilotCells.forEach(cell => {
+            cell.style.textAlign = 'center';
+            cell.style.fontSize = '13px';
+        });
+
+        // Style source links
+        const sourceLinkCells = document.querySelectorAll('.pfct-source-link a');
+        sourceLinkCells.forEach(link => {
+            link.addEventListener('mouseenter', function() {
+                this.style.textDecoration = 'underline';
+            });
+            link.addEventListener('mouseleave', function() {
+                this.style.textDecoration = 'none';
+            });
+        });
     }
 
     function trackConversion(email) {
@@ -527,7 +601,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Email captured:', email);
     }
 
-    // Input validation
+    // Input validation (unchanged)
     if (emailInput) {
         emailInput.addEventListener('input', function() {
             this.style.borderColor = isValidEmail(this.value.trim()) ? '#ccc' : '#d63638';
