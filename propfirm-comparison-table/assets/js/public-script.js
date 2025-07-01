@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <div style="margin-top: 15px; text-align: center;">
-                <span id="pfct-results-count" style="font-weight: bold; color: #007cba;"></span>
+                <span id="pfct-results-count" style="font-weight: bold; color: #115bff;"></span>
             </div>
         `;
 
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${row.drawdown_mode || 'N/A'}</td>
                 <td class="pfct-discount-code">${row.discount_code || 'N/A'}</td>
                 <td class="pfct-trustpilot">${formatTrustpilotScore(row.trustpilot_score)}</td>
-                <td class="pfct-source-link">${row.source_url ? `<a href="${row.source_url}" target="_blank" style="color: #007cba; text-decoration: none;">Visit Site</a>` : 'N/A'}</td>
+                <td class="pfct-source-link">${row.source_url ? `<a href="${row.source_url}" target="_blank" style="color: #115bff; text-decoration: none;">Visit Site</a>` : 'N/A'}</td>
             `;
             tbody.appendChild(tr);
         });
