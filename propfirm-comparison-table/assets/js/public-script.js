@@ -1,5 +1,5 @@
 /**
- * Enhanced PropFirm Comparison Table - Added Search, Sort, Horizontal Scroll, and Trustpilot Score
+ * Enhanced PropFirm Comparison Table - Added Pagination and Fixed Styling
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -14,15 +14,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Configuration
     const CSV_URL = 'https://raw.githubusercontent.com/JustinLuft/propdatascraper/main/plans_output.csv';
+    const RESULTS_PER_PAGE = 15;
     
     // Global data storage
     let allData = [];
     let filteredData = [];
+    let displayedData = [];
+    let currentPage = 0;
     let currentSort = { column: 'price', direction: 'asc' };
 
     if (!form) return;
 
-    // Form submission handler (unchanged)
+    // Form submission handler
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -64,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Utility functions (unchanged)
+    // Utility functions
     function isValidEmail(email) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
@@ -143,14 +146,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return isNaN(numValue) ? value : `$${numValue.toLocaleString()}`;
     }
 
-    // NEW: Format Trustpilot score with visual enhancement
     function formatTrustpilotScore(score) {
         if (!score || score === '' || score === 'N/A') return 'N/A';
         
         const numScore = parseFloat(score);
         if (isNaN(numScore)) return score;
         
-        // Create star rating visual
         const fullStars = Math.floor(numScore);
         const hasHalfStar = numScore % 1 >= 0.5;
         const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
@@ -159,13 +160,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (hasHalfStar) stars += '☆';
         stars += '☆'.repeat(emptyStars);
         
-        // Color coding based on score
-        let color = '#999'; // Default gray
-        if (numScore >= 4.5) color = '#00B67A'; // Excellent - Green
-        else if (numScore >= 4.0) color = '#73CF11'; // Great - Light Green  
-        else if (numScore >= 3.5) color = '#FF8C00'; // Good - Orange
-        else if (numScore >= 2.5) color = '#FF6D2E'; // Poor - Red Orange
-        else color = '#FF3722'; // Bad - Red
+        let color = '#999';
+        if (numScore >= 4.5) color = '#00B67A';
+        else if (numScore >= 4.0) color = '#73CF11';
+        else if (numScore >= 3.5) color = '#FF8C00';
+        else if (numScore >= 2.5) color = '#FF6D2E';
+        else color = '#FF3722';
         
         return `<span style="color: ${color}; font-weight: bold;">${numScore.toFixed(1)} ${stars}</span>`;
     }
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return row.price_raw || 'N/A';
     }
 
-    // ENHANCED: Create filter controls with search and sort (updated with Trustpilot)
+    // Create filter controls
     function createFilterControls(data) {
         const filterContainer = document.createElement('div');
         filterContainer.className = 'pfct-filters';
@@ -203,13 +203,11 @@ document.addEventListener('DOMContentLoaded', function() {
         filterContainer.innerHTML = `
             <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Search & Filter Results</h3>
             
-            <!-- Search Bar -->
             <div style="margin-bottom: 15px;">
                 <input type="text" id="pfct-search" placeholder="Search businesses, plans, account types..." 
                        style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
             </div>
 
-            <!-- Sort Controls -->
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Sort By:</label>
@@ -235,7 +233,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
 
-            <!-- Quick Filters -->
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Business:</label>
@@ -270,14 +267,14 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <div style="margin-top: 15px; text-align: center;">
-                <span id="pfct-results-count" style="font-weight: bold; color: #115bff;"></span>
+                <span id="pfct-results-count" style="font-weight: bold; color: #115bff !important;"></span>
             </div>
         `;
 
         return filterContainer;
     }
 
-    // ENHANCED: Apply filters with search, sort, and Trustpilot rating
+    // Apply filters and reset pagination
     function applyFilters() {
         const searchTerm = document.getElementById('pfct-search')?.value.toLowerCase() || '';
         const businessFilter = document.getElementById('pfct-filter-business')?.value || '';
@@ -289,7 +286,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Filter data
         filteredData = allData.filter(row => {
-            // Search filter
             if (searchTerm) {
                 const searchableText = [
                     row.business_name, row.plan_name, row.account_type, 
@@ -298,7 +294,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!searchableText.includes(searchTerm)) return false;
             }
 
-            // Other filters
             if (businessFilter && row.business_name !== businessFilter) return false;
             if (sizeFilter && row.account_size !== sizeFilter) return false;
             if (priceFilter) {
@@ -307,7 +302,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!isNaN(maxPrice) && rowPrice > 0 && rowPrice > maxPrice) return false;
             }
 
-            // NEW: Trustpilot rating filter
             if (ratingFilter) {
                 const rowRating = parseFloat(row.trustpilot_score);
                 const minRating = parseFloat(ratingFilter);
@@ -343,18 +337,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        // Reset pagination
+        currentPage = 0;
+        displayedData = [];
+        loadMoreResults();
+    }
+
+    // Load more results (pagination)
+    function loadMoreResults() {
+        const startIndex = currentPage * RESULTS_PER_PAGE;
+        const endIndex = startIndex + RESULTS_PER_PAGE;
+        const newResults = filteredData.slice(startIndex, endIndex);
+        
+        displayedData = [...displayedData, ...newResults];
+        currentPage++;
+        
         renderTable();
         updateResultsCount();
+        updateLoadMoreButton();
     }
 
     function updateResultsCount() {
         const countElement = document.getElementById('pfct-results-count');
         if (countElement) {
-            countElement.textContent = `Showing ${filteredData.length} of ${allData.length} results`;
+            countElement.textContent = `Showing ${displayedData.length} of ${filteredData.length} results`;
+            countElement.style.color = '#115bff';
         }
     }
 
-    // ENHANCED: Render table with Trustpilot score
+    function updateLoadMoreButton() {
+        const loadMoreBtn = document.getElementById('pfct-load-more');
+        if (loadMoreBtn) {
+            const hasMore = displayedData.length < filteredData.length;
+            loadMoreBtn.style.display = hasMore ? 'block' : 'none';
+            if (hasMore) {
+                const remaining = filteredData.length - displayedData.length;
+                loadMoreBtn.textContent = `Load More (${Math.min(remaining, RESULTS_PER_PAGE)} more)`;
+            }
+        }
+    }
+
+    // Render table with current displayed data
     function renderTable() {
         const tableElement = document.querySelector('.pfct-comparison-table');
         if (!tableElement) return;
@@ -362,14 +385,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const tbody = tableElement.querySelector('tbody');
         if (!tbody) return;
 
-        tbody.innerHTML = '';
+        if (currentPage === 1) {
+            tbody.innerHTML = '';
+        }
 
-        if (filteredData.length === 0) {
+        if (displayedData.length === 0) {
             tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 20px; color: #666;">No results match your criteria.</td></tr>';
             return;
         }
 
-        filteredData.forEach(row => {
+        const startIndex = (currentPage - 1) * RESULTS_PER_PAGE;
+        const newRows = displayedData.slice(startIndex);
+
+        newRows.forEach(row => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${row.business_name || 'N/A'}</strong></td>
@@ -411,9 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const filterControls = createFilterControls(allData);
             
-            // ENHANCED: Table with Trustpilot score and source URL
             const tableHTML = `
-                <!-- Horizontal Scroll Controls -->
                 <div style="text-align: center; margin-bottom: 10px;">
                     <button id="scroll-left" style="padding: 8px 12px; margin-right: 10px; background: #115bff; color: white; border: none; border-radius: 4px; cursor: pointer;">← Scroll Left</button>
                     <button id="scroll-right" style="padding: 8px 12px; background: #115bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Scroll Right →</button>
@@ -443,6 +469,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     </table>
                 </div>
 
+                <div style="text-align: center; margin: 20px 0;">
+                    <button id="pfct-load-more" style="padding: 12px 24px; background: #115bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; display: none;">
+                        Load More
+                    </button>
+                </div>
+
                 <div style="text-align: center; margin-top: 20px; font-size: 14px; color: #666;">
                     <p>* Prices and terms subject to change. Verify with providers.</p>
                     <p>★ = Trustpilot ratings updated regularly</p>
@@ -456,6 +488,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             setupFilterListeners();
             setupScrollControls();
+            setupLoadMoreButton();
             applyFilters();
             
         } catch (error) {
@@ -469,21 +502,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ENHANCED: Setup all event listeners (updated with rating filter)
+    // Setup all event listeners
     function setupFilterListeners() {
-        // Search input
         const searchInput = document.getElementById('pfct-search');
         if (searchInput) {
             searchInput.addEventListener('input', debounce(applyFilters, 300));
         }
 
-        // Sort controls
         ['pfct-sort-column', 'pfct-sort-direction'].forEach(id => {
             const element = document.getElementById(id);
             if (element) element.addEventListener('change', applyFilters);
         });
 
-        // Filter controls (updated with rating filter)
         ['pfct-filter-business', 'pfct-filter-size', 'pfct-filter-price', 'pfct-filter-rating'].forEach(id => {
             const element = document.getElementById(id);
             if (element) {
@@ -494,7 +524,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Clear filters (updated)
         const clearBtn = document.getElementById('pfct-clear-filters');
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
@@ -510,7 +539,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Setup horizontal scroll controls (unchanged)
+    // Setup load more button
+    function setupLoadMoreButton() {
+        const loadMoreBtn = document.getElementById('pfct-load-more');
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', loadMoreResults);
+        }
+    }
+
+    // Setup horizontal scroll controls
     function setupScrollControls() {
         const scrollContainer = document.getElementById('table-scroll-container');
         const scrollLeft = document.getElementById('scroll-left');
@@ -525,7 +562,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 scrollContainer.scrollBy({ left: 200, behavior: 'smooth' });
             });
 
-            // Mouse wheel horizontal scroll
             scrollContainer.addEventListener('wheel', (e) => {
                 if (e.shiftKey) {
                     e.preventDefault();
@@ -547,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // ENHANCED: Table interactivity with Trustpilot styling
+    // Table interactivity
     function addTableInteractivity() {
         const tableRows = document.querySelectorAll('.pfct-comparison-table tbody tr');
         
@@ -561,7 +597,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Highlight discount codes
         const discountCells = document.querySelectorAll('.pfct-discount-code');
         discountCells.forEach(cell => {
             if (cell.textContent !== 'N/A' && cell.textContent.trim() !== '') {
@@ -571,14 +606,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Style Trustpilot cells
         const trustpilotCells = document.querySelectorAll('.pfct-trustpilot');
         trustpilotCells.forEach(cell => {
             cell.style.textAlign = 'center';
             cell.style.fontSize = '13px';
         });
 
-        // Style source links
         const sourceLinkCells = document.querySelectorAll('.pfct-source-link a');
         sourceLinkCells.forEach(link => {
             link.addEventListener('mouseenter', function() {
@@ -601,7 +634,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Email captured:', email);
     }
 
-    // Input validation (unchanged)
+    // Input validation
     if (emailInput) {
         emailInput.addEventListener('input', function() {
             this.style.borderColor = isValidEmail(this.value.trim()) ? '#ccc' : '#d63638';
