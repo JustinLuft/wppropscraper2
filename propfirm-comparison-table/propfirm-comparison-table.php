@@ -7,36 +7,40 @@
  * Text Domain: propfirm-comparison
  * Domain Path: /languages
  */
-
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
 }
-
 // Define plugin constants
 define('PFCT_VERSION', '1.2');
 define('PFCT_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('PFCT_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('PFCT_PLUGIN_BASENAME', plugin_basename(__FILE__));
-
 // Include required files
 require_once PFCT_PLUGIN_PATH . 'includes/class-pfct-activator.php';
 require_once PFCT_PLUGIN_PATH . 'includes/class-pfct-deactivator.php';
 require_once PFCT_PLUGIN_PATH . 'includes/class-pfct-ajax.php';
 require_once PFCT_PLUGIN_PATH . 'public/class-pfct-public.php';
 require_once PFCT_PLUGIN_PATH . 'public/class-pfct-shortcode.php';
-
 // Include admin files only in admin area
 if (is_admin()) {
     require_once PFCT_PLUGIN_PATH . 'admin/class-pfct-admin-menu.php';
     require_once PFCT_PLUGIN_PATH . 'includes/class-pfct-admin.php';
 }
-
 // Plugin activation hook
 register_activation_hook(__FILE__, array('PFCT_Activator', 'activate'));
-
 // Plugin deactivation hook
 register_deactivation_hook(__FILE__, array('PFCT_Deactivator', 'deactivate'));
+
+// Register plugin settings
+add_action('admin_init', 'pfct_admin_init');
+
+function pfct_admin_init() {
+    // Register the settings group
+    register_setting('pfct_settings', 'pfct_table_style');
+    register_setting('pfct_settings', 'pfct_show_header');
+    register_setting('pfct_settings', 'pfct_enable_sorting');
+}
 
 // Initialize the plugin
 function pfct_init() {
@@ -60,7 +64,6 @@ function pfct_init() {
     }
 }
 add_action('plugins_loaded', 'pfct_init');
-
 // Add test line for debugging
 add_action('wp_footer', function() { 
 });
