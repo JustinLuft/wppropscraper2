@@ -1,14 +1,8 @@
 /**
- * Enhanced PropFirm Comparison Table - Added Pagination and Fixed Styling
+ * PropFirm Comparison Table - Direct Display (No Email Required)
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('pfct-email-form');
-    const emailInput = document.getElementById('pfct-email');
-    const submitBtn = form ? form.querySelector('.pfct-submit-btn') : null;
-    const loadingDiv = document.getElementById('pfct-loading');
-    const errorDiv = document.getElementById('pfct-error');
-    const emailCapture = document.getElementById('pfct-email-capture');
     const tableContainer = document.getElementById('pfct-table-container');
     const tableContent = document.getElementById('pfct-table-content');
 
@@ -23,89 +17,11 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 0;
     let currentSort = { column: 'price', direction: 'asc' };
 
-    if (!form) return;
-
-    // Form submission handler
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const email = emailInput.value.trim();
-        const nonceField = document.getElementById('pfct_nonce');
-        const nonce = nonceField ? nonceField.value : '';
-        
-        if (!email || !isValidEmail(email)) {
-            showError('Please enter a valid email address.');
-            return;
-        }
-
-        setLoadingState(true);
-
-        try {
-            const response = await fetch(pfct_ajax.ajax_url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    action: 'pfct_save_email',
-                    email: email,
-                    nonce: nonce
-                })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                hideEmailForm();
-                showTableContainer();
-                loadTableData();
-                trackConversion(email);
-            } else {
-                showError(data.data || 'Failed to save email. Please try again.');
-            }
-        } catch (error) {
-            showError('An error occurred. Please check your connection and try again.');
-        } finally {
-            setLoadingState(false);
-        }
-    });
-
-    // Utility functions
-    function isValidEmail(email) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
-
-    function showError(message) {
-        if (errorDiv) {
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            setTimeout(() => errorDiv.style.display = 'none', 5000);
-        }
-    }
-
-    function setLoadingState(isLoading) {
-        if (submitBtn) {
-            submitBtn.disabled = isLoading;
-            submitBtn.textContent = isLoading ? 'Processing...' : 'Submit';
-        }
-        if (loadingDiv) loadingDiv.style.display = isLoading ? 'block' : 'none';
-        if (errorDiv) errorDiv.style.display = 'none';
-    }
-
-    function hideEmailForm() {
-        if (emailCapture) {
-            emailCapture.style.transition = 'opacity 0.3s ease';
-            emailCapture.style.opacity = '0';
-            setTimeout(() => emailCapture.style.display = 'none', 300);
-        }
-    }
-
-    function showTableContainer() {
-        if (tableContainer) {
-            tableContainer.style.display = 'block';
-            tableContainer.style.opacity = '0';
-            setTimeout(() => {
-                tableContainer.style.transition = 'opacity 0.5s ease';
-                tableContainer.style.opacity = '1';
-            }, 50);
-        }
+    // Show table container immediately and load data
+    if (tableContainer) {
+        tableContainer.style.display = 'block';
+        tableContainer.style.opacity = '1';
+        loadTableData();
     }
 
     // Enhanced CSV parsing
@@ -425,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadTableData() {
         if (!tableContent) return;
 
-        tableContent.innerHTML = '<div style="text-align: center; padding: 20px;">Loading data...</div>';
+        tableContent.innerHTML = '<div style="text-align: center; padding: 20px;">Loading PropFirm comparison data...</div>';
 
         try {
             const response = await fetch(CSV_URL);
@@ -620,28 +536,6 @@ document.addEventListener('DOMContentLoaded', function() {
             link.addEventListener('mouseleave', function() {
                 this.style.textDecoration = 'none';
             });
-        });
-    }
-
-    function trackConversion(email) {
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'conversion', {
-                'event_category': 'PropFirm',
-                'event_label': 'Email Captured',
-                'value': 1
-            });
-        }
-        console.log('Email captured:', email);
-    }
-
-    // Input validation
-    if (emailInput) {
-        emailInput.addEventListener('input', function() {
-            this.style.borderColor = isValidEmail(this.value.trim()) ? '#ccc' : '#d63638';
-        });
-        
-        emailInput.addEventListener('focus', function() {
-            if (errorDiv) errorDiv.style.display = 'none';
         });
     }
 });
