@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: PropFirm Comparison Table
- * Description: Automated comparison table for prop firm offers with email capture.
- * Version: 1.3
+ * Description: Automated comparison table for prop firms.
+ * Version: 1.4
  * Author: Perlee Digital
  * Text Domain: propfirm-comparison
  * Domain Path: /languages
