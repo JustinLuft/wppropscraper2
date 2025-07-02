@@ -32,16 +32,6 @@ register_activation_hook(__FILE__, array('PFCT_Activator', 'activate'));
 // Plugin deactivation hook
 register_deactivation_hook(__FILE__, array('PFCT_Deactivator', 'deactivate'));
 
-// Register plugin settings
-add_action('admin_init', 'pfct_admin_init');
-
-function pfct_admin_init() {
-    // Register the settings group
-    register_setting('pfct_settings', 'pfct_table_style');
-    register_setting('pfct_settings', 'pfct_show_header');
-    register_setting('pfct_settings', 'pfct_enable_sorting');
-}
-
 // Initialize the plugin
 function pfct_init() {
     // Debug: Check if pfct_init is called
