@@ -2,59 +2,36 @@
 /**
  * Admin page display template
  */
-
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
 }
 ?>
-
 <div class="wrap">
-    <h1>PropFirm Comparison Settings</h1>
+    <h1>PropFirm Comparison Table</h1>
     
     <div class="pfct-admin-content">
         <div class="pfct-info-box">
             <h2>Plugin Information</h2>
             <p>Use the shortcode <code>[pfct_comparison_table]</code> to display the comparison table on any page or post.</p>
+            <p>The table automatically loads data from your CSV source and displays a fully interactive comparison table with filtering, sorting, and pagination.</p>
         </div>
         
-        <div class="pfct-settings-section">
-            <h2>Settings</h2>
-            <form method="post" action="options.php">
-                <?php
-                settings_fields('pfct_settings');
-                do_settings_sections('pfct_settings');
-                ?>
-                
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">Table Style</th>
-                        <td>
-                            <select name="pfct_table_style">
-                                <option value="default" <?php selected(get_option('pfct_table_style', 'default'), 'default'); ?>>Default</option>
-                                <option value="modern" <?php selected(get_option('pfct_table_style', 'default'), 'modern'); ?>>Modern</option>
-                                <option value="minimal" <?php selected(get_option('pfct_table_style', 'default'), 'minimal'); ?>>Minimal</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Show Header</th>
-                        <td>
-                            <input type="checkbox" name="pfct_show_header" value="1" <?php checked(get_option('pfct_show_header', 1), 1); ?>>
-                            <label>Display table header</label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Enable Sorting</th>
-                        <td>
-                            <input type="checkbox" name="pfct_enable_sorting" value="1" <?php checked(get_option('pfct_enable_sorting', 1), 1); ?>>
-                            <label>Allow users to sort columns</label>
-                        </td>
-                    </tr>
-                </table>
-                
-                <?php submit_button(); ?>
-            </form>
+        <div class="pfct-features-section">
+            <h2>Features</h2>
+            <ul>
+                <li><strong>Search & Filter:</strong> Users can search and filter by business name, account size, price, and ratings</li>
+                <li><strong>Sorting:</strong> Sortable columns for price, business name, account size, profit goal, and Trustpilot score</li>
+                <li><strong>Pagination:</strong> Loads 15 results at a time with "Load More" functionality</li>
+                <li><strong>Responsive Design:</strong> Horizontal scrolling for mobile devices</li>
+                <li><strong>Auto-Update:</strong> Data refreshes from your CSV source automatically</li>
+            </ul>
+        </div>
+        
+        <div class="pfct-usage-section">
+            <h2>Usage</h2>
+            <p>Simply add the shortcode <code>[pfct_comparison_table]</code> to any page or post where you want the table to appear.</p>
+            <p>The table will automatically load and display your PropFirm comparison data with all interactive features enabled.</p>
         </div>
     </div>
     
@@ -79,15 +56,23 @@ if (!defined('ABSPATH')) {
         border-radius: 3px;
         font-family: monospace;
     }
-    .pfct-settings-section {
+    .pfct-features-section, .pfct-usage-section {
         background: #fff;
         border: 1px solid #ccd0d4;
         padding: 20px;
         border-radius: 4px;
         margin: 20px 0;
     }
-    .pfct-settings-section h2 {
+    .pfct-features-section h2, .pfct-usage-section h2 {
         margin-top: 0;
+        color: #333;
+    }
+    .pfct-features-section ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+    .pfct-features-section li {
+        margin-bottom: 8px;
     }
     </style>
 </div>
