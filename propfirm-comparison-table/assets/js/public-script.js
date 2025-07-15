@@ -1,5 +1,5 @@
 /**
- * Prop Firm Comparison Table - Direct Display (No Email Required)
+ * PropFirm Comparison Table - Direct Display (No Email Required)
  */
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -97,39 +97,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return row.price_raw || 'N/A';
     }
 
-    // Normalize account size values
-    function normalizeAccountSize(size) {
-        if (!size || size === '' || size === 'N/A') return 'N/A';
-        
-        // Skip contract entries
-        if (size.toLowerCase().includes('contract')) return null;
-        
-        // Convert to string and clean
-        const sizeStr = size.toString().trim();
-        
-        // Extract numeric value
-        const numMatch = sizeStr.match(/(\d+(?:,\d+)*(?:\.\d+)?)/);
-        if (!numMatch) return sizeStr;
-        
-        const numValue = parseFloat(numMatch[1].replace(/,/g, ''));
-        
-        // Format based on size
-        if (numValue >= 1000000) {
-            return `$${(numValue / 1000000).toFixed(numValue % 1000000 === 0 ? 0 : 1)}M`;
-        } else if (numValue >= 1000) {
-            return `$${(numValue / 1000).toFixed(numValue % 1000 === 0 ? 0 : 1)}K`;
-        } else {
-            return `$${numValue.toLocaleString()}`;
-        }
-    }
-
     // Create filter controls
     function createFilterControls(data) {
         const filterContainer = document.createElement('div');
         filterContainer.className = 'pfct-filters';
         filterContainer.style.cssText = `
-            background: white;
-            color: #115bff;
+            background: #f8f9fa;
             padding: 18px;
             margin-bottom: 20px;
             border-radius: 8px;
@@ -137,28 +110,24 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         const businesses = [...new Set(data.map(row => row.business_name))].filter(Boolean).sort();
-        
-        // Get normalized account sizes, filter out contracts, and remove duplicates
-        const accountSizes = [...new Set(data.map(row => normalizeAccountSize(row.account_size)))]
-            .filter(size => size !== null && size !== 'N/A')
-            .sort((a, b) => {
-                const aNum = parseFloat(a.replace(/[$,KM]/g, '')) * (a.includes('K') ? 1000 : a.includes('M') ? 1000000 : 1);
-                const bNum = parseFloat(b.replace(/[$,KM]/g, '')) * (b.includes('K') ? 1000 : b.includes('M') ? 1000000 : 1);
-                return aNum - bNum;
-            });
+        const accountSizes = [...new Set(data.map(row => row.account_size))].filter(Boolean).sort((a, b) => {
+            const aNum = parseFloat(a.toString().replace(/[$,K]/g, ''));
+            const bNum = parseFloat(b.toString().replace(/[$,K]/g, ''));
+            return aNum - bNum;
+        });
 
         filterContainer.innerHTML = `
-            <h3 style="margin-top: 0; margin-bottom: 15px; color: #115bff;">Search & Filter Results</h3>
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Search & Filter Results</h3>
             
             <div style="margin-bottom: 15px;">
                 <input type="text" id="pfct-search" placeholder="Search businesses, plans, account types..." 
-                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; color: #115bff;">
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;">
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Sort By:</label>
-                    <select id="pfct-sort-column" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Sort By:</label>
+                    <select id="pfct-sort-column" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="price">Price</option>
                         <option value="business_name">Business Name</option>
                         <option value="account_size">Account Size</option>
@@ -167,37 +136,37 @@ document.addEventListener('DOMContentLoaded', function() {
                     </select>
                 </div>
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Order:</label>
-                    <select id="pfct-sort-direction" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Order:</label>
+                    <select id="pfct-sort-direction" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="asc">Low to High</option>
                         <option value="desc">High to Low</option>
                     </select>
                 </div>
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Max Price:</label>
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Max Price:</label>
                     <input type="number" id="pfct-filter-price" placeholder="Max Price" 
-                           style="width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
+                           style="width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Business:</label>
-                    <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Business:</label>
+                    <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="">All Businesses</option>
                         ${businesses.map(business => `<option value="${business}">${business}</option>`).join('')}
                     </select>
                 </div>
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Account Size:</label>
-                    <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Account Size:</label>
+                    <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="">All Sizes</option>
                         ${accountSizes.map(size => `<option value="${size}">${size}</option>`).join('')}
                     </select>
                 </div>
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Min Rating:</label>
-                    <select id="pfct-filter-rating" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">Min Rating:</label>
+                    <select id="pfct-filter-rating" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
                         <option value="">All Ratings</option>
                         <option value="4.5">4.5+ Stars</option>
                         <option value="4.0">4.0+ Stars</option>
@@ -206,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </select>
                 </div>
                 <div style="display: flex; flex-direction: column;">
-                    <label style="margin-bottom: 5px; font-weight: bold; color: #115bff; opacity: 0;">Clear</label>
+                    <label style="margin-bottom: 5px; font-weight: bold; color: #555; opacity: 0;">Clear</label>
                     <button id="pfct-clear-filters" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
                         Clear All
                     </button>
@@ -242,12 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (businessFilter && row.business_name !== businessFilter) return false;
-            
-            if (sizeFilter) {
-                const normalizedSize = normalizeAccountSize(row.account_size);
-                if (normalizedSize !== sizeFilter) return false;
-            }
-            
+            if (sizeFilter && row.account_size !== sizeFilter) return false;
             if (priceFilter) {
                 const rowPrice = getNumericPrice(row);
                 const maxPrice = parseFloat(priceFilter);
@@ -342,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (displayedData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 20px; color: #666;">No results match your criteria.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 20px; color: #666; font-weight: bold;">No results match your criteria.</td></tr>';
             return;
         }
 
@@ -351,20 +315,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         newRows.forEach(row => {
             const tr = document.createElement('tr');
-            tr.style.color = '#115bff';
             tr.innerHTML = `
-                <td style="color: #115bff;"><strong>${row.business_name || 'N/A'}</strong></td>
-                <td style="color: #115bff;">${row.plan_name || 'N/A'}</td>
-                <td style="color: #115bff;">${row.account_type || 'N/A'}</td>
-                <td style="color: #115bff;">${normalizeAccountSize(row.account_size) || 'N/A'}</td>
-                <td style="color: #115bff;">${getFormattedPrice(row)}</td>
-                <td style="color: #115bff;">${formatCurrency(row.profit_goal)}</td>
-                <td style="color: #115bff;">${formatCurrency(row.trailing_drawdown)}</td>
-                <td style="color: #115bff;">${formatCurrency(row.daily_loss_limit)}</td>
-                <td style="color: #115bff;">${formatCurrency(row.activation_fee)}</td>
-                <td style="color: #115bff;">${formatCurrency(row.reset_fee)}</td>
-                <td style="color: #115bff;">${row.drawdown_mode || 'N/A'}</td>
-                <td class="pfct-trustpilot">${formatTrustpilotScore(row.trustpilot_score)}</td>
+                <td style="font-weight: bold;"><strong>${row.business_name || 'N/A'}</strong></td>
+                <td style="font-weight: bold;">${row.plan_name || 'N/A'}</td>
+                <td style="font-weight: bold;">${row.account_type || 'N/A'}</td>
+                <td style="font-weight: bold;">${row.account_size || 'N/A'}</td>
+                <td style="font-weight: bold;">${getFormattedPrice(row)}</td>
+                <td style="font-weight: bold;">${formatCurrency(row.profit_goal)}</td>
+                <td style="font-weight: bold;">${formatCurrency(row.trailing_drawdown)}</td>
+                <td style="font-weight: bold;">${formatCurrency(row.daily_loss_limit)}</td>
+                <td style="font-weight: bold;">${formatCurrency(row.activation_fee)}</td>
+                <td style="font-weight: bold;">${formatCurrency(row.reset_fee)}</td>
+                <td style="font-weight: bold;">${row.drawdown_mode || 'N/A'}</td>
+                <td class="pfct-discount-code" style="font-weight: bold;">${row.discount_code || 'N/A'}</td>
+                <td class="pfct-trustpilot" style="font-weight: bold;">${formatTrustpilotScore(row.trustpilot_score)}</td>
+                <td class="pfct-source-link" style="font-weight: bold;">${row.source_url ? `<a href="${row.source_url}" target="_blank" style="color: #115bff; text-decoration: none; font-weight: bold;">Visit Site</a>` : 'N/A'}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -376,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadTableData() {
         if (!tableContent) return;
 
-        tableContent.innerHTML = '<div style="text-align: center; padding: 20px; color: #115bff;">Loading Prop Firm comparison data...</div>';
+        tableContent.innerHTML = '<div style="text-align: center; padding: 20px;">Loading PropFirm comparison data...</div>';
 
         try {
             const response = await fetch(CSV_URL);
@@ -396,22 +361,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     <button id="scroll-right" style="padding: 8px 12px; background: #115bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Scroll Right →</button>
                 </div>
 
-                <div id="table-scroll-container" style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 4px; background: white;">
-                    <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; min-width: 1800px; font-size: 14px;">
+                <div id="table-scroll-container" style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 4px;">
+                    <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; min-width: 1600px;">
                         <thead>
-                            <tr style="background: #115bff !important; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Business</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Plan Name</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white !important;">Account Type</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white !important;">Account Size</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white !important;">Price</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white !important;">Profit Goal</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Trailing Drawdown</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Daily Loss Limit</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Activation Fee</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white !important;">Reset Fee</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Drawdown Mode</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 150px; color: white !important;">Trustpilot Rating</th>
+                            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Business</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Plan Name</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px; font-weight: bold;">Account Type</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px; font-weight: bold;">Account Size</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Price</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px; font-weight: bold;">Profit Goal</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Trailing Drawdown</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Daily Loss Limit</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Activation Fee</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px; font-weight: bold;">Reset Fee</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Drawdown Mode</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Discount Code</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 130px; font-weight: bold;">Trustpilot Rating</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px; font-weight: bold;">Visit Site</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -546,10 +513,30 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
+        const discountCells = document.querySelectorAll('.pfct-discount-code');
+        discountCells.forEach(cell => {
+            if (cell.textContent !== 'N/A' && cell.textContent.trim() !== '') {
+                cell.style.backgroundColor = '#e7f3ff';
+                cell.style.fontWeight = 'bold';
+                cell.style.color = '#0066cc';
+            }
+        });
+
         const trustpilotCells = document.querySelectorAll('.pfct-trustpilot');
         trustpilotCells.forEach(cell => {
             cell.style.textAlign = 'center';
             cell.style.fontSize = '13px';
+            cell.style.fontWeight = 'bold';
+        });
+
+        const sourceLinkCells = document.querySelectorAll('.pfct-source-link a');
+        sourceLinkCells.forEach(link => {
+            link.addEventListener('mouseenter', function() {
+                this.style.textDecoration = 'underline';
+            });
+            link.addEventListener('mouseleave', function() {
+                this.style.textDecoration = 'none';
+            });
         });
     }
 });
