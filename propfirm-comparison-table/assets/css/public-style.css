@@ -20,7 +20,7 @@
 
 .pfct-email-capture h3 {
     margin-bottom: 20px;
-    color: #333;
+    color: #115bff;
     font-size: 24px;
 }
 
@@ -32,7 +32,7 @@
     display: block;
     margin-bottom: 8px;
     font-weight: bold;
-    color: #555;
+    color: #115bff;
     font-size: 16px;
 }
 
@@ -106,7 +106,7 @@
 }
 
 .pfct-table-header h3 {
-    color: #333;
+    color: #115bff;
     font-size: 28px;
     margin-bottom: 10px;
 }
@@ -133,7 +133,7 @@
 .pfct-filter-group label {
     margin-bottom: 5px;
     font-weight: bold;
-    color: #555;
+    color: #115bff;
     font-size: 14px;
 }
 
@@ -155,7 +155,7 @@
 
 /* Clear filters button - now black */
 .pfct-clear-filters-btn {
-    background: #333;
+    background: #115bff;
     color: white;
     padding: 8px 16px;
     border: none;
@@ -169,11 +169,11 @@
 }
 
 .pfct-clear-filters-btn:hover {
-    background: #555;
+    background: #115bff;
 }
 
 .pfct-clear-filters-btn:focus {
-    outline: 2px solid #333;
+    outline: 2px solid #115bff;
     outline-offset: 2px;
 }
 
