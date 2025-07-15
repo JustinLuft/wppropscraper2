@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PropFirm Comparison Table
  * Description: Automated comparison table for prop firms.
- * Version: 1.4
+ * Version: 1.5
  * Author: Perlee Digital
  * Text Domain: propfirm-comparison
  * Domain Path: /languages
