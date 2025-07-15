@@ -399,19 +399,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div id="table-scroll-container" style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 4px; background: white;">
                     <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; min-width: 1800px; font-size: 14px;">
                         <thead>
-                            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: #115bff;">Business</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: #115bff;">Plan Name</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: #115bff;">Account Type</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: #115bff;">Account Size</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: #115bff;">Price</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: #115bff;">Profit Goal</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: #115bff;">Trailing Drawdown</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: #115bff;">Daily Loss Limit</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: #115bff;">Activation Fee</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: #115bff;">Reset Fee</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: #115bff;">Drawdown Mode</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 150px; color: #115bff;">Trustpilot Rating</th>
+                            <tr style="background: #115bff; border-bottom: 2px solid #dee2e6;">
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white;">Business</th>
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white;">Plan Name</th>
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white;">Account Type</th>
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white;">Account Size</th>
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white;">Price</th>
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white;">Profit Goal</th>
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white;">Trailing Drawdown</th>
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white;">Daily Loss Limit</th>
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white;">Activation Fee</th>
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white;">Reset Fee</th>
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white;">Drawdown Mode</th>
+                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 150px; color: white;">Trustpilot Rating</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
