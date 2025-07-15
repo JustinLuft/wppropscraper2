@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (displayedData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 20px; color: #666; font-weight: bold;">No results match your criteria.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="14" style="text-align: center; padding: 20px; color: #666;">No results match your criteria.</td></tr>';
             return;
         }
 
@@ -316,20 +316,20 @@ document.addEventListener('DOMContentLoaded', function() {
         newRows.forEach(row => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td style="font-weight: bold;"><strong>${row.business_name || 'N/A'}</strong></td>
-                <td style="font-weight: bold;">${row.plan_name || 'N/A'}</td>
-                <td style="font-weight: bold;">${row.account_type || 'N/A'}</td>
-                <td style="font-weight: bold;">${row.account_size || 'N/A'}</td>
-                <td style="font-weight: bold;">${getFormattedPrice(row)}</td>
-                <td style="font-weight: bold;">${formatCurrency(row.profit_goal)}</td>
-                <td style="font-weight: bold;">${formatCurrency(row.trailing_drawdown)}</td>
-                <td style="font-weight: bold;">${formatCurrency(row.daily_loss_limit)}</td>
-                <td style="font-weight: bold;">${formatCurrency(row.activation_fee)}</td>
-                <td style="font-weight: bold;">${formatCurrency(row.reset_fee)}</td>
-                <td style="font-weight: bold;">${row.drawdown_mode || 'N/A'}</td>
-                <td class="pfct-discount-code" style="font-weight: bold;">${row.discount_code || 'N/A'}</td>
-                <td class="pfct-trustpilot" style="font-weight: bold;">${formatTrustpilotScore(row.trustpilot_score)}</td>
-                <td class="pfct-source-link" style="font-weight: bold;">${row.source_url ? `<a href="${row.source_url}" target="_blank" style="color: #115bff; text-decoration: none; font-weight: bold;">Visit Site</a>` : 'N/A'}</td>
+                <td><strong>${row.business_name || 'N/A'}</strong></td>
+                <td>${row.plan_name || 'N/A'}</td>
+                <td>${row.account_type || 'N/A'}</td>
+                <td>${row.account_size || 'N/A'}</td>
+                <td>${getFormattedPrice(row)}</td>
+                <td>${formatCurrency(row.profit_goal)}</td>
+                <td>${formatCurrency(row.trailing_drawdown)}</td>
+                <td>${formatCurrency(row.daily_loss_limit)}</td>
+                <td>${formatCurrency(row.activation_fee)}</td>
+                <td>${formatCurrency(row.reset_fee)}</td>
+                <td>${row.drawdown_mode || 'N/A'}</td>
+                <td class="pfct-discount-code">${row.discount_code || 'N/A'}</td>
+                <td class="pfct-trustpilot">${formatTrustpilotScore(row.trustpilot_score)}</td>
+                <td class="pfct-source-link">${row.source_url ? `<a href="${row.source_url}" target="_blank" style="color: #115bff; text-decoration: none;">Visit Site</a>` : 'N/A'}</td>
             `;
             tbody.appendChild(tr);
         });
@@ -365,20 +365,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; min-width: 1600px;">
                         <thead>
                             <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Business</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Plan Name</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px; font-weight: bold;">Account Type</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px; font-weight: bold;">Account Size</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Price</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px; font-weight: bold;">Profit Goal</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Trailing Drawdown</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Daily Loss Limit</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Activation Fee</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px; font-weight: bold;">Reset Fee</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Drawdown Mode</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; font-weight: bold;">Discount Code</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 130px; font-weight: bold;">Trustpilot Rating</th>
-                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px; font-weight: bold;">Visit Site</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Business</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Plan Name</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Account Type</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Account Size</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Price</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Profit Goal</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Trailing Drawdown</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Daily Loss Limit</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Activation Fee</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Reset Fee</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Drawdown Mode</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 120px;">Discount Code</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 130px;">Trustpilot Rating</th>
+                                <th style="padding: 12px; text-align: left; border: 1px solid #dee2e6; min-width: 100px;">Visit Site</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -526,7 +526,6 @@ document.addEventListener('DOMContentLoaded', function() {
         trustpilotCells.forEach(cell => {
             cell.style.textAlign = 'center';
             cell.style.fontSize = '13px';
-            cell.style.fontWeight = 'bold';
         });
 
         const sourceLinkCells = document.querySelectorAll('.pfct-source-link a');
