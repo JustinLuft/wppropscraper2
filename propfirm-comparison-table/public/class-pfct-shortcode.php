@@ -19,7 +19,7 @@ class PFCT_Shortcode {
      */
     public function render_shortcode($atts) {
         $atts = shortcode_atts(array(
-            'title' => 'PropFirm Comparison Table'
+            'title' => 'Prop Firm Comparison Table'
         ), $atts);
 
         ob_start();
