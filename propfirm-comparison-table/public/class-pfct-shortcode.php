@@ -40,7 +40,7 @@ class PFCT_Shortcode {
         <div id="pfct-table-container" class="pfct-table-container">
             <div class="pfct-table-header">
                 <h3><?php echo esc_html($atts['title']); ?></h3>
-                <p>Here are the latest prop firm offers and their details:</p>
+                <p>Here are the latest prop firm deals and their details:</p>
             </div>
             <div id="pfct-table-content" class="pfct-table-content">
                 <?php echo $this->get_table_html(); ?>
