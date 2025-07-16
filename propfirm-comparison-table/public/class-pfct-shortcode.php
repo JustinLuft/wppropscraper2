@@ -38,10 +38,8 @@ class PFCT_Shortcode {
         ob_start();
         ?>
         <div id="pfct-table-container" class="pfct-table-container">
-            <div class="pfct-table-header">
+            <div class="pfct-table-header" style="text-align: center;">
                 <h3><?php echo esc_html($atts['title']); ?></h3>
-            </div>
-            <div style="text-align: center;">
                 <p>Here are the latest prop firm deals and their details:</p>
             </div>
             <div id="pfct-table-content" class="pfct-table-content">
