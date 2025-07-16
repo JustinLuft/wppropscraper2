@@ -1,6 +1,6 @@
 /**
- * Aligned CSS for PropFirm Comparison Table
- * Matches the JavaScript implementation exactly
+ * Fixed CSS for PropFirm Comparison Table
+ * Coordinated with JavaScript implementation
  */
 
 /* Main container */
@@ -52,7 +52,7 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Filter controls - matches JS structure */
+/* Filter controls - matches JS structure exactly */
 .pfct-filters {
     background: white;
     color: #115bff;
@@ -195,6 +195,7 @@
     border-radius: 4px;
     background: white;
     margin-bottom: 20px;
+    scroll-behavior: smooth;
 }
 
 /* Main table - matches JS structure */
@@ -233,14 +234,15 @@
 .pfct-comparison-table th:nth-child(11) { min-width: 140px; }
 .pfct-comparison-table th:nth-child(12) { min-width: 150px; }
 
+/* FIXED: Table rows - removed conflicting hover effects */
 .pfct-comparison-table tbody tr {
     color: #115bff;
-    transition: background-color 0.2s ease;
-    cursor: pointer;
+    /* Removed transition and cursor from CSS - handled by JS */
 }
 
+/* Let JavaScript handle hover effects completely */
 .pfct-comparison-table tbody tr:hover {
-    background-color: #115bff;
+    /* Remove CSS hover - JS handles this */
 }
 
 .pfct-comparison-table td {
@@ -444,25 +446,20 @@ button:focus {
     outline-offset: 2px;
 }
 
-/* Smooth scrolling for table */
-#table-scroll-container {
-    scroll-behavior: smooth;
-}
-
-/* Hover effects for interactive elements */
+/* FIXED: Removed conflicting hover effects */
 .pfct-filters select:hover,
 .pfct-filters input:hover {
     border-color: #115bff;
 }
 
+/* FIXED: Simplified button hover - no transform conflicts */
 button:hover {
-    transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Animation for filter changes */
+/* FIXED: Removed animation that could conflict with JS state changes */
 .pfct-comparison-table tbody {
-    transition: opacity 0.3s ease;
+    /* Removed transition - let JS handle state changes */
 }
 
 /* Ensure proper box-sizing for all elements */
@@ -470,4 +467,14 @@ button:hover {
 .pfct-comparison-table *,
 button {
     box-sizing: border-box;
+}
+
+/* FIXED: Ensure JS-managed styles take precedence */
+.pfct-comparison-table tbody tr[style] {
+    /* Allow JS inline styles to override CSS */
+}
+
+/* FIXED: Ensure trustpilot formatting doesn't conflict with JS */
+.pfct-trustpilot[style] {
+    /* Allow JS inline styles for trustpilot ratings */
 }
