@@ -126,9 +126,17 @@ class PFCT_Shortcode {
             max-width: 100%;
             margin: 20px 0;
         }
+        .pfct-table-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
         .pfct-table-header h3 {
             color: #333;
             margin-bottom: 10px;
+        }
+        .pfct-table-header p {
+            color: #666;
+            margin-bottom: 0;
         }
         .pfct-search-filter {
             background: #f8f9fa;
