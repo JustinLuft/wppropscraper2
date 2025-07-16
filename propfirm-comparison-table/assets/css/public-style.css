@@ -11,6 +11,25 @@
     font-family: Arial, sans-serif;
 }
 
+/* Center the main heading and description */
+.pfct-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.pfct-header h1,
+.pfct-header h2 {
+    color: #115bff;
+    margin-bottom: 15px;
+    font-size: 28px;
+}
+
+.pfct-header p {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
 /* Table container - matches JS display logic */
 #pfct-table-container {
     margin-top: 20px;
@@ -119,14 +138,24 @@
     outline-offset: 2px;
 }
 
-/* Results counter - matches JS styling */
+/* Results counter - centered */
+.pfct-results-counter {
+    text-align: center;
+    margin: 15px 0;
+}
+
 #pfct-results-count {
     font-weight: bold;
     color: #115bff !important;
     font-size: 16px;
 }
 
-/* Scroll controls */
+/* Scroll controls - centered */
+.pfct-scroll-controls {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
 #scroll-left,
 #scroll-right {
     padding: 8px 12px;
@@ -225,7 +254,12 @@
     font-weight: bold;
 }
 
-/* Load more button */
+/* Load more button - centered */
+.pfct-load-more-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
 #pfct-load-more {
     padding: 12px 24px;
     background: #115bff;
@@ -247,15 +281,15 @@
     outline-offset: 2px;
 }
 
-/* Footer text styling */
-.pfct-comparison-table + div + div {
+/* Footer text styling - centered */
+.pfct-footer {
     text-align: center;
     margin-top: 20px;
     font-size: 14px;
     color: #666;
 }
 
-.pfct-comparison-table + div + div p {
+.pfct-footer p {
     margin: 5px 0;
 }
 
