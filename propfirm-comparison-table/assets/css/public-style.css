@@ -13,26 +13,32 @@
 
 /* Center the main heading and description */
 .pfct-header {
-    text-align: center;
+    text-align: center !important;
     margin-bottom: 30px;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .pfct-header h1,
 .pfct-header h2 {
-    color: #115bff;
-    margin: 0 auto 15px auto;
-    font-size: 28px;
-    text-align: center;
-    display: block;
+    color: #115bff !important;
+    margin: 0 auto 15px auto !important;
+    font-size: 28px !important;
+    text-align: center !important;
+    display: block !important;
+    width: 100% !important;
 }
 
 .pfct-header p {
-    color: #666;
-    font-size: 16px;
-    margin: 0 auto 20px auto;
-    text-align: center;
-    display: block;
+    color: #666 !important;
+    font-size: 16px !important;
+    margin: 0 auto 20px auto !important;
+    text-align: center !important;
+    display: block !important;
+    width: 100% !important;
 }
 
 /* Table container - matches JS display logic */
