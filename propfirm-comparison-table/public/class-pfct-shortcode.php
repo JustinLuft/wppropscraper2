@@ -170,7 +170,7 @@ class PFCT_Shortcode {
             border-bottom: 1px solid #ddd;
         }
         .pfct-comparison-table th {
-            background-color: #f8f9fa;
+            background-color: #115bff;
             font-weight: bold;
             color: #333;
         }
