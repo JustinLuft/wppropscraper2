@@ -1,96 +1,18 @@
 /**
- * Public styles for PropFirm Comparison Table
+ * Aligned CSS for PropFirm Comparison Table
+ * Matches the JavaScript implementation exactly
  */
 
+/* Main container */
 .pfct-wrapper {
-    max-width: 800px;
+    max-width: none;
     margin: 20px auto;
     padding: 20px;
     font-family: Arial, sans-serif;
 }
 
-.pfct-email-capture {
-    background: #f9f9f9;
-    padding: 30px;
-    border-radius: 8px;
-    text-align: center;
-    border: 1px solid #ddd;
-    margin-bottom: 20px;
-}
-
-.pfct-email-capture h3 {
-    margin-bottom: 20px;
-    color: #115bff;
-    font-size: 24px;
-}
-
-.pfct-form-group {
-    margin-bottom: 20px;
-}
-
-.pfct-form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #115bff;
-    font-size: 16px;
-}
-
-.pfct-form-group input[type="email"] {
-    width: 100%;
-    max-width: 300px;
-    padding: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-
-.pfct-form-group input[type="email"]:focus {
-    border-color: #115bff;
-    outline: none;
-    box-shadow: 0 0 5px rgba(17, 91, 255, 0.3);
-}
-
-.pfct-submit-btn {
-    background: #115bff;
-    color: white;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.3s ease;
-    text-transform: uppercase;
-    font-weight: bold;
-}
-
-.pfct-submit-btn:hover {
-    background: #0d4dd4;
-}
-
-.pfct-submit-btn:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-}
-
-.pfct-loading {
-    margin-top: 10px;
-    color: #666;
-    font-style: italic;
-}
-
-.pfct-error {
-    margin-top: 10px;
-    color: #d63638;
-    font-weight: bold;
-    background: #ffebee;
-    padding: 10px;
-    border-radius: 4px;
-    border-left: 4px solid #d63638;
-}
-
-.pfct-table-container {
+/* Table container - matches JS display logic */
+#pfct-table-container {
     margin-top: 20px;
     animation: fadeIn 0.5s ease-in;
 }
@@ -100,150 +22,274 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-.pfct-table-header {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.pfct-table-header h3 {
+/* Filter controls - matches JS structure */
+.pfct-filters {
+    background: white;
     color: #115bff;
-    font-size: 28px;
-    margin-bottom: 10px;
+    padding: 18px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
 }
 
-.pfct-table-header p {
-    color: #666;
-    font-size: 16px;
+.pfct-filters h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #115bff;
+    font-size: 18px;
 }
 
-/* Filter section styles */
-.pfct-filter-section {
+/* Search input */
+#pfct-search {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #115bff;
+    box-sizing: border-box;
+}
+
+#pfct-search:focus {
+    border-color: #115bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(17, 91, 255, 0.3);
+}
+
+/* Filter grid layouts - matches JS structure */
+.pfct-filters > div:nth-child(3) {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 15px;
-    margin-bottom: 20px;
-    align-items: end;
+    margin-bottom: 15px;
 }
 
-.pfct-filter-group {
-    display: flex;
-    flex-direction: column;
+.pfct-filters > div:nth-child(4) {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
 }
 
-.pfct-filter-group label {
+/* Filter labels and controls */
+.pfct-filters label {
+    display: block;
     margin-bottom: 5px;
     font-weight: bold;
     color: #115bff;
     font-size: 14px;
 }
 
-.pfct-filter-group select,
-.pfct-filter-group input[type="number"] {
-    padding: 8px 12px;
+.pfct-filters select,
+.pfct-filters input[type="number"] {
+    width: 100%;
+    padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    color: #115bff;
     font-size: 14px;
     background: white;
+    box-sizing: border-box;
 }
 
-.pfct-filter-group select:focus,
-.pfct-filter-group input[type="number"]:focus {
+.pfct-filters select:focus,
+.pfct-filters input[type="number"]:focus {
     border-color: #115bff;
     outline: none;
     box-shadow: 0 0 3px rgba(17, 91, 255, 0.3);
 }
 
-/* Clear filters button - now black */
-.pfct-clear-filters-btn {
-    background: #115bff;
+/* Clear filters button - matches JS styling */
+#pfct-clear-filters {
+    padding: 8px 12px;
+    background: #6c757d;
     color: white;
-    padding: 8px 16px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: bold;
     transition: background 0.3s ease;
-    height: fit-content;
-    align-self: end;
 }
 
-.pfct-clear-filters-btn:hover {
-    background: #115bff;
+#pfct-clear-filters:hover {
+    background: #5a6268;
 }
 
-.pfct-clear-filters-btn:focus {
+#pfct-clear-filters:focus {
     outline: 2px solid #115bff;
     outline-offset: 2px;
 }
 
-/* Results counter */
-.pfct-results-counter {
-    text-align: center;
-    margin: 20px 0;
-    font-size: 18px;
-    color: #115bff;
+/* Results counter - matches JS styling */
+#pfct-results-count {
     font-weight: bold;
-}
-
-.pfct-comparison-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.pfct-comparison-table th,
-.pfct-comparison-table td {
-    padding: 15px 12px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-.pfct-comparison-table th {
-    background: #115bff;
-    color: white;
-    font-weight: bold;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.pfct-comparison-table tbody tr {
-    transition: background-color 0.2s ease;
-}
-
-.pfct-comparison-table tbody tr:hover {
-    background: #f8f9fa;
-}
-
-.pfct-comparison-table tbody tr:nth-child(even) {
-    background: #fafbfc;
-}
-
-.pfct-comparison-table tbody tr:nth-child(even):hover {
-    background: #f0f1f2;
-}
-
-.pfct-trustpilot-score {
-    font-weight: bold;
-    color: #00b67a;
+    color: #115bff !important;
     font-size: 16px;
 }
 
-.pfct-price {
-    font-weight: bold;
-    color: #115bff;
-    font-size: 18px;
+/* Scroll controls */
+#scroll-left,
+#scroll-right {
+    padding: 8px 12px;
+    background: #115bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s ease;
 }
 
-.pfct-loading-table {
+#scroll-left:hover,
+#scroll-right:hover {
+    background: #0d4dd4;
+}
+
+#scroll-left {
+    margin-right: 10px;
+}
+
+/* Table scroll container */
+#table-scroll-container {
+    overflow-x: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: white;
+    margin-bottom: 20px;
+}
+
+/* Main table - matches JS structure */
+.pfct-comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1800px;
+    font-size: 14px;
+    background: white;
+}
+
+.pfct-comparison-table thead tr {
+    background: #115bff !important;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.pfct-comparison-table th {
+    padding: 15px;
+    text-align: left;
+    border: 1px solid #dee2e6;
+    color: white !important;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.pfct-comparison-table th:nth-child(1) { min-width: 140px; }
+.pfct-comparison-table th:nth-child(2) { min-width: 140px; }
+.pfct-comparison-table th:nth-child(3) { min-width: 120px; }
+.pfct-comparison-table th:nth-child(4) { min-width: 120px; }
+.pfct-comparison-table th:nth-child(5) { min-width: 120px; }
+.pfct-comparison-table th:nth-child(6) { min-width: 120px; }
+.pfct-comparison-table th:nth-child(7) { min-width: 140px; }
+.pfct-comparison-table th:nth-child(8) { min-width: 140px; }
+.pfct-comparison-table th:nth-child(9) { min-width: 140px; }
+.pfct-comparison-table th:nth-child(10) { min-width: 120px; }
+.pfct-comparison-table th:nth-child(11) { min-width: 140px; }
+.pfct-comparison-table th:nth-child(12) { min-width: 150px; }
+
+.pfct-comparison-table tbody tr {
+    color: #115bff;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.pfct-comparison-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.pfct-comparison-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border: 1px solid #dee2e6;
+    color: #115bff;
+    font-size: 14px;
+}
+
+.pfct-comparison-table td strong {
+    color: #115bff;
+}
+
+/* Trustpilot cell styling - matches JS */
+.pfct-trustpilot {
     text-align: center;
-    padding: 40px;
+    font-size: 13px;
+}
+
+.pfct-trustpilot span {
+    font-weight: bold;
+}
+
+/* Load more button */
+#pfct-load-more {
+    padding: 12px 24px;
+    background: #115bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease;
+    display: none;
+}
+
+#pfct-load-more:hover {
+    background: #0d4dd4;
+}
+
+#pfct-load-more:focus {
+    outline: 2px solid #115bff;
+    outline-offset: 2px;
+}
+
+/* Footer text styling */
+.pfct-comparison-table + div + div {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
     color: #666;
-    font-size: 18px;
+}
+
+.pfct-comparison-table + div + div p {
+    margin: 5px 0;
+}
+
+/* No results message */
+.pfct-comparison-table tbody td[colspan="12"] {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Loading message */
+.pfct-loading-message {
+    text-align: center;
+    padding: 20px;
+    color: #115bff;
+    font-size: 16px;
+}
+
+/* Error message */
+.pfct-error-message {
+    text-align: center;
+    padding: 20px;
+    color: #d63638;
+}
+
+.pfct-error-message p:first-child {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.pfct-error-message p:last-child {
+    font-size: 12px;
+    color: #666;
 }
 
 /* Responsive design */
@@ -253,95 +299,130 @@
         padding: 15px;
     }
     
-    .pfct-email-capture {
-        padding: 20px;
+    .pfct-filters {
+        padding: 15px;
     }
     
-    .pfct-filter-section {
+    .pfct-filters > div:nth-child(3) {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .pfct-filters > div:nth-child(4) {
         grid-template-columns: 1fr;
         gap: 10px;
     }
     
     .pfct-comparison-table {
-        font-size: 14px;
+        font-size: 12px;
     }
     
     .pfct-comparison-table th,
     .pfct-comparison-table td {
-        padding: 10px 8px;
+        padding: 8px 6px;
     }
     
-    .pfct-form-group input[type="email"] {
-        max-width: 100%;
+    #scroll-left,
+    #scroll-right {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    #scroll-left {
+        margin-right: 5px;
     }
 }
 
 @media (max-width: 600px) {
+    .pfct-filters > div:nth-child(4) {
+        grid-template-columns: 1fr;
+    }
+    
     .pfct-comparison-table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
+        min-width: 1200px;
     }
     
     .pfct-comparison-table th,
     .pfct-comparison-table td {
-        min-width: 120px;
-    }
-    
-    .pfct-filter-section {
-        grid-template-columns: 1fr;
+        padding: 6px 4px;
+        font-size: 12px;
     }
 }
 
 @media (max-width: 480px) {
-    .pfct-filter-section {
-        grid-template-columns: 1fr;
-        gap: 15px;
+    .pfct-filters {
+        padding: 12px;
     }
     
-    .pfct-clear-filters-btn {
+    .pfct-filters h3 {
+        font-size: 16px;
+    }
+    
+    #pfct-clear-filters {
         width: 100%;
         margin-top: 10px;
     }
-}
-
-/* Success message styling */
-.pfct-success {
-    margin-top: 10px;
-    color: #155724;
-    background: #d4edda;
-    padding: 10px;
-    border-radius: 4px;
-    border-left: 4px solid #28a745;
-}
-
-/* Accessibility improvements */
-.pfct-form-group input[type="email"]:focus,
-.pfct-submit-btn:focus {
-    outline: 2px solid #115bff;
-    outline-offset: 2px;
+    
+    #pfct-load-more {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
 }
 
 /* Print styles */
 @media print {
-    .pfct-email-capture,
-    .pfct-filter-section {
+    .pfct-filters,
+    #scroll-left,
+    #scroll-right,
+    #pfct-load-more {
         display: none;
     }
     
     .pfct-comparison-table {
         box-shadow: none;
         border: 1px solid #000;
+        font-size: 10px;
+    }
+    
+    .pfct-comparison-table th,
+    .pfct-comparison-table td {
+        padding: 4px;
+        border: 1px solid #000;
     }
 }
 
-/* Add this ↓↓↓ */
-.pfct-clear-filters-btn {
-    padding: 4px 10px;
-    font-size: 12px;
-    height: auto;
-    width: auto;
-    line-height: 1.2;
-    align-self: end;
+/* Accessibility improvements */
+.pfct-filters input:focus,
+.pfct-filters select:focus,
+button:focus {
+    outline: 2px solid #115bff;
+    outline-offset: 2px;
 }
 
+/* Smooth scrolling for table */
+#table-scroll-container {
+    scroll-behavior: smooth;
+}
+
+/* Hover effects for interactive elements */
+.pfct-filters select:hover,
+.pfct-filters input:hover {
+    border-color: #115bff;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Animation for filter changes */
+.pfct-comparison-table tbody {
+    transition: opacity 0.3s ease;
+}
+
+/* Ensure proper box-sizing for all elements */
+.pfct-filters *,
+.pfct-comparison-table *,
+button {
+    box-sizing: border-box;
+}
