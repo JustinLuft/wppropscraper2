@@ -15,19 +15,24 @@
 .pfct-header {
     text-align: center;
     margin-bottom: 30px;
+    width: 100%;
 }
 
 .pfct-header h1,
 .pfct-header h2 {
     color: #115bff;
-    margin-bottom: 15px;
+    margin: 0 auto 15px auto;
     font-size: 28px;
+    text-align: center;
+    display: block;
 }
 
 .pfct-header p {
     color: #666;
     font-size: 16px;
-    margin-bottom: 20px;
+    margin: 0 auto 20px auto;
+    text-align: center;
+    display: block;
 }
 
 /* Table container - matches JS display logic */
