@@ -1,50 +1,72 @@
 /**
- * Prop Firm Comparison Table - Direct Display (No Email Required)
+ * Simplified Prop Firm Comparison Table
+ * All customizations are at the top for easy editing
  */
 
+// ========================================
+// CUSTOMIZATION SETTINGS - EDIT THESE
+// ========================================
+const CONFIG = {
+    // Colors
+    colors: {
+        primary: '#115bff',           // Main brand color
+        primaryText: '#115bff',       // Primary text color
+        white: '#ffffff',             // White backgrounds
+        lightGray: '#f8f9fa',         // Hover backgrounds
+        borderGray: '#dee2e6',        // Border colors
+        textMuted: '#666666',         // Muted text
+        errorRed: '#d63638'           // Error messages
+    },
+    
+    // Data source
+    csvUrl: 'https://raw.githubusercontent.com/JustinLuft/propdatascraper/main/plans_output.csv',
+    
+    // Pagination
+    resultsPerPage: 15,
+    
+    // Table settings
+    table: {
+        minWidth: '1800px',
+        fontSize: '14px',
+        headerPadding: '15px',
+        cellPadding: '12px'
+    },
+    
+    // Animation
+    scrollAmount: 200,
+    debounceDelay: 300
+};
+
+// ========================================
+// MAIN APPLICATION CODE
+// ========================================
 document.addEventListener('DOMContentLoaded', function() {
     const tableContainer = document.getElementById('pfct-table-container');
     const tableContent = document.getElementById('pfct-table-content');
 
-    // Configuration
-    const CSV_URL = 'https://raw.githubusercontent.com/JustinLuft/propdatascraper/main/plans_output.csv';
-    const RESULTS_PER_PAGE = 15;
-    
-    // Global data storage
+    // Global state
     let allData = [];
     let filteredData = [];
     let displayedData = [];
     let currentPage = 0;
-    let currentSort = { column: 'price', direction: 'asc' };
 
-    // Show table container immediately and load data
+    // Initialize
     if (tableContainer) {
         tableContainer.style.display = 'block';
         tableContainer.style.opacity = '1';
         loadTableData();
     }
 
-    // Enhanced CSV parsing
+    // ========================================
+    // DATA PROCESSING FUNCTIONS
+    // ========================================
     function parseCSV(csvText) {
         const lines = csvText.trim().split('\n');
         const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
         const data = [];
 
         for (let i = 1; i < lines.length; i++) {
-            const values = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let j = 0; j < lines[i].length; j++) {
-                const char = lines[i][j];
-                if (char === '"') inQuotes = !inQuotes;
-                else if (char === ',' && !inQuotes) {
-                    values.push(current.trim().replace(/"/g, ''));
-                    current = '';
-                } else current += char;
-            }
-            values.push(current.trim().replace(/"/g, ''));
-            
+            const values = parseCSVLine(lines[i]);
             if (values.length === headers.length) {
                 const row = {};
                 headers.forEach((header, index) => row[header] = values[index]);
@@ -54,7 +76,26 @@ document.addEventListener('DOMContentLoaded', function() {
         return data;
     }
 
-    // Formatting functions
+    function parseCSVLine(line) {
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let j = 0; j < line.length; j++) {
+            const char = line[j];
+            if (char === '"') inQuotes = !inQuotes;
+            else if (char === ',' && !inQuotes) {
+                values.push(current.trim().replace(/"/g, ''));
+                current = '';
+            } else current += char;
+        }
+        values.push(current.trim().replace(/"/g, ''));
+        return values;
+    }
+
+    // ========================================
+    // FORMATTING FUNCTIONS
+    // ========================================
     function formatCurrency(value) {
         if (!value || value === '' || value === 'N/A' || value === 'None') return 'N/A';
         if (value.toString().includes('$')) return value;
@@ -68,22 +109,46 @@ document.addEventListener('DOMContentLoaded', function() {
         const numScore = parseFloat(score);
         if (isNaN(numScore)) return score;
         
-        const fullStars = Math.floor(numScore);
-        const hasHalfStar = numScore % 1 >= 0.5;
+        const stars = getStarRating(numScore);
+        const color = getRatingColor(numScore);
+        
+        return `<span style="color: ${color}; font-weight: bold;">${numScore.toFixed(1)} ${stars}</span>`;
+    }
+
+    function getStarRating(score) {
+        const fullStars = Math.floor(score);
+        const hasHalfStar = score % 1 >= 0.5;
         const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
         
         let stars = '★'.repeat(fullStars);
         if (hasHalfStar) stars += '☆';
         stars += '☆'.repeat(emptyStars);
+        return stars;
+    }
+
+    function getRatingColor(score) {
+        if (score >= 4.5) return '#00B67A';
+        if (score >= 4.0) return '#73CF11';
+        if (score >= 3.5) return '#FF8C00';
+        if (score >= 2.5) return '#FF6D2E';
+        return '#FF3722';
+    }
+
+    function normalizeAccountSize(size) {
+        if (!size || size === '' || size === 'N/A') return 'N/A';
+        if (size.toLowerCase().includes('contract')) return null;
         
-        let color = '#999';
-        if (numScore >= 4.5) color = '#00B67A';
-        else if (numScore >= 4.0) color = '#73CF11';
-        else if (numScore >= 3.5) color = '#FF8C00';
-        else if (numScore >= 2.5) color = '#FF6D2E';
-        else color = '#FF3722';
+        const numMatch = size.toString().match(/(\d+(?:,\d+)*(?:\.\d+)?)/);
+        if (!numMatch) return size;
         
-        return `<span style="color: ${color}; font-weight: bold;">${numScore.toFixed(1)} ${stars}</span>`;
+        const numValue = parseFloat(numMatch[1].replace(/,/g, ''));
+        
+        if (numValue >= 1000000) {
+            return `$${(numValue / 1000000).toFixed(numValue % 1000000 === 0 ? 0 : 1)}M`;
+        } else if (numValue >= 1000) {
+            return `$${(numValue / 1000).toFixed(numValue % 1000 === 0 ? 0 : 1)}K`;
+        }
+        return `$${numValue.toLocaleString()}`;
     }
 
     function getNumericPrice(row) {
@@ -93,212 +158,331 @@ document.addEventListener('DOMContentLoaded', function() {
         return numMatch ? parseFloat(numMatch[1]) : 0;
     }
 
-    function getFormattedPrice(row) {
-        return row.price_raw || 'N/A';
-    }
-
-    // Normalize account size values
-    function normalizeAccountSize(size) {
-        if (!size || size === '' || size === 'N/A') return 'N/A';
-        
-        // Skip contract entries
-        if (size.toLowerCase().includes('contract')) return null;
-        
-        // Convert to string and clean
-        const sizeStr = size.toString().trim();
-        
-        // Extract numeric value
-        const numMatch = sizeStr.match(/(\d+(?:,\d+)*(?:\.\d+)?)/);
-        if (!numMatch) return sizeStr;
-        
-        const numValue = parseFloat(numMatch[1].replace(/,/g, ''));
-        
-        // Format based on size
-        if (numValue >= 1000000) {
-            return `$${(numValue / 1000000).toFixed(numValue % 1000000 === 0 ? 0 : 1)}M`;
-        } else if (numValue >= 1000) {
-            return `$${(numValue / 1000).toFixed(numValue % 1000 === 0 ? 0 : 1)}K`;
-        } else {
-            return `$${numValue.toLocaleString()}`;
-        }
-    }
-
-    // Create filter controls
+    // ========================================
+    // UI CREATION FUNCTIONS
+    // ========================================
     function createFilterControls(data) {
+        const businesses = [...new Set(data.map(row => row.business_name))].filter(Boolean).sort();
+        const accountSizes = getUniqueAccountSizes(data);
+
         const filterContainer = document.createElement('div');
         filterContainer.className = 'pfct-filters';
-        filterContainer.style.cssText = `
-            background: white;
-            color: #115bff;
+        filterContainer.style.cssText = getFilterStyles();
+        filterContainer.innerHTML = getFilterHTML(businesses, accountSizes);
+
+        return filterContainer;
+    }
+
+    function getFilterStyles() {
+        return `
+            background: ${CONFIG.colors.white};
+            color: ${CONFIG.colors.primaryText};
             padding: 18px;
             margin-bottom: 20px;
             border-radius: 8px;
-            border: 1px solid #dee2e6;
+            border: 1px solid ${CONFIG.colors.borderGray};
         `;
+    }
 
-        const businesses = [...new Set(data.map(row => row.business_name))].filter(Boolean).sort();
-        
-        // Get normalized account sizes, filter out contracts, and remove duplicates
-        const accountSizes = [...new Set(data.map(row => normalizeAccountSize(row.account_size)))]
+    function getFilterHTML(businesses, accountSizes) {
+        return `
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: ${CONFIG.colors.primary};">Search & Filter Results</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="pfct-search" placeholder="Search businesses, plans, account types..." 
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; color: ${CONFIG.colors.primaryText};">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                ${createSortControls()}
+                ${createPriceFilter()}
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                ${createBusinessFilter(businesses)}
+                ${createSizeFilter(accountSizes)}
+                ${createRatingFilter()}
+                ${createClearButton()}
+            </div>
+
+            <div style="margin-top: 15px; text-align: center;">
+                <span id="pfct-results-count" style="font-weight: bold; color: ${CONFIG.colors.primary} !important;"></span>
+            </div>
+        `;
+    }
+
+    function createSortControls() {
+        return `
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: ${CONFIG.colors.primary};">Sort By:</label>
+                <select id="pfct-sort-column" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: ${CONFIG.colors.primaryText};">
+                    <option value="price">Price</option>
+                    <option value="business_name">Business Name</option>
+                    <option value="account_size">Account Size</option>
+                    <option value="profit_goal">Profit Goal</option>
+                    <option value="trustpilot_score">Trustpilot Score</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: ${CONFIG.colors.primary};">Order:</label>
+                <select id="pfct-sort-direction" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: ${CONFIG.colors.primaryText};">
+                    <option value="asc">Low to High</option>
+                    <option value="desc">High to Low</option>
+                </select>
+            </div>
+        `;
+    }
+
+    function createPriceFilter() {
+        return `
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: ${CONFIG.colors.primary};">Max Price:</label>
+                <input type="number" id="pfct-filter-price" placeholder="Max Price" 
+                       style="width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: ${CONFIG.colors.primaryText};">
+            </div>
+        `;
+    }
+
+    function createBusinessFilter(businesses) {
+        const options = businesses.map(business => `<option value="${business}">${business}</option>`).join('');
+        return `
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: ${CONFIG.colors.primary};">Business:</label>
+                <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: ${CONFIG.colors.primaryText};">
+                    <option value="">All Businesses</option>
+                    ${options}
+                </select>
+            </div>
+        `;
+    }
+
+    function createSizeFilter(accountSizes) {
+        const options = accountSizes.map(size => `<option value="${size}">${size}</option>`).join('');
+        return `
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: ${CONFIG.colors.primary};">Account Size:</label>
+                <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: ${CONFIG.colors.primaryText};">
+                    <option value="">All Sizes</option>
+                    ${options}
+                </select>
+            </div>
+        `;
+    }
+
+    function createRatingFilter() {
+        return `
+            <div>
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: ${CONFIG.colors.primary};">Min Rating:</label>
+                <select id="pfct-filter-rating" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: ${CONFIG.colors.primaryText};">
+                    <option value="">All Ratings</option>
+                    <option value="4.5">4.5+ Stars</option>
+                    <option value="4.0">4.0+ Stars</option>
+                    <option value="3.5">3.5+ Stars</option>
+                    <option value="3.0">3.0+ Stars</option>
+                </select>
+            </div>
+        `;
+    }
+
+    function createClearButton() {
+        return `
+            <div style="display: flex; flex-direction: column;">
+                <label style="margin-bottom: 5px; font-weight: bold; color: ${CONFIG.colors.primary}; opacity: 0;">Clear</label>
+                <button id="pfct-clear-filters" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Clear All
+                </button>
+            </div>
+        `;
+    }
+
+    function getUniqueAccountSizes(data) {
+        return [...new Set(data.map(row => normalizeAccountSize(row.account_size)))]
             .filter(size => size !== null && size !== 'N/A')
             .sort((a, b) => {
                 const aNum = parseFloat(a.replace(/[$,KM]/g, '')) * (a.includes('K') ? 1000 : a.includes('M') ? 1000000 : 1);
                 const bNum = parseFloat(b.replace(/[$,KM]/g, '')) * (b.includes('K') ? 1000 : b.includes('M') ? 1000000 : 1);
                 return aNum - bNum;
             });
-
-        filterContainer.innerHTML = `
-            <h3 style="margin-top: 0; margin-bottom: 15px; color: #115bff;">Search & Filter Results</h3>
-            
-            <div style="margin-bottom: 15px;">
-                <input type="text" id="pfct-search" placeholder="Search businesses, plans, account types..." 
-                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; color: #115bff;">
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Sort By:</label>
-                    <select id="pfct-sort-column" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
-                        <option value="price">Price</option>
-                        <option value="business_name">Business Name</option>
-                        <option value="account_size">Account Size</option>
-                        <option value="profit_goal">Profit Goal</option>
-                        <option value="trustpilot_score">Trustpilot Score</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Order:</label>
-                    <select id="pfct-sort-direction" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
-                        <option value="asc">Low to High</option>
-                        <option value="desc">High to Low</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Max Price:</label>
-                    <input type="number" id="pfct-filter-price" placeholder="Max Price" 
-                           style="width: 95%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Business:</label>
-                    <select id="pfct-filter-business" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
-                        <option value="">All Businesses</option>
-                        ${businesses.map(business => `<option value="${business}">${business}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Account Size:</label>
-                    <select id="pfct-filter-size" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
-                        <option value="">All Sizes</option>
-                        ${accountSizes.map(size => `<option value="${size}">${size}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #115bff;">Min Rating:</label>
-                    <select id="pfct-filter-rating" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; color: #115bff;">
-                        <option value="">All Ratings</option>
-                        <option value="4.5">4.5+ Stars</option>
-                        <option value="4.0">4.0+ Stars</option>
-                        <option value="3.5">3.5+ Stars</option>
-                        <option value="3.0">3.0+ Stars</option>
-                    </select>
-                </div>
-                <div style="display: flex; flex-direction: column;">
-                    <label style="margin-bottom: 5px; font-weight: bold; color: #115bff; opacity: 0;">Clear</label>
-                    <button id="pfct-clear-filters" style="padding: 8px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Clear All
-                    </button>
-                </div>
-            </div>
-
-            <div style="margin-top: 15px; text-align: center;">
-                <span id="pfct-results-count" style="font-weight: bold; color: #115bff !important;"></span>
-            </div>
-        `;
-
-        return filterContainer;
     }
 
-    // Apply filters and reset pagination
+    function createTableHTML() {
+        return `
+            <div style="text-align: center; margin-bottom: 10px;">
+                <button id="scroll-left" style="padding: 8px 12px; margin-right: 10px; background: ${CONFIG.colors.primary}; color: white; border: none; border-radius: 4px; cursor: pointer;">← Scroll Left</button>
+                <button id="scroll-right" style="padding: 8px 12px; background: ${CONFIG.colors.primary}; color: white; border: none; border-radius: 4px; cursor: pointer;">Scroll Right →</button>
+            </div>
+
+            <div id="table-scroll-container" style="overflow-x: auto; border: 1px solid ${CONFIG.colors.borderGray}; border-radius: 4px; background: ${CONFIG.colors.white};">
+                <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; min-width: ${CONFIG.table.minWidth}; font-size: ${CONFIG.table.fontSize};">
+                    <thead>
+                        <tr style="background: ${CONFIG.colors.primary} !important; border-bottom: 2px solid ${CONFIG.colors.borderGray};">
+                            ${createTableHeaders()}
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <button id="pfct-load-more" style="padding: 12px 24px; background: ${CONFIG.colors.primary}; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; display: none;">
+                    Load More
+                </button>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px; font-size: 14px; color: ${CONFIG.colors.textMuted};">
+                <p>* Prices and terms subject to change. Verify with providers.</p>
+                <p>★ = Trustpilot ratings updated regularly</p>
+                <p>Last updated: ${new Date().toLocaleDateString()}</p>
+            </div>
+        `;
+    }
+
+    function createTableHeaders() {
+        const headers = [
+            'Business', 'Plan Name', 'Account Type', 'Account Size', 'Price',
+            'Profit Goal', 'Trailing Drawdown', 'Daily Loss Limit', 
+            'Activation Fee', 'Reset Fee', 'Drawdown Mode', 'Trustpilot Rating'
+        ];
+        
+        const minWidths = [140, 140, 120, 120, 120, 120, 140, 140, 140, 120, 140, 150];
+        
+        return headers.map((header, index) => 
+            `<th style="padding: ${CONFIG.table.headerPadding}; text-align: left; border: 1px solid ${CONFIG.colors.borderGray}; min-width: ${minWidths[index]}px; color: ${CONFIG.colors.white} !important;">${header}</th>`
+        ).join('');
+    }
+
+    // ========================================
+    // DATA FILTERING AND SORTING
+    // ========================================
     function applyFilters() {
-        const searchTerm = document.getElementById('pfct-search')?.value.toLowerCase() || '';
-        const businessFilter = document.getElementById('pfct-filter-business')?.value || '';
-        const sizeFilter = document.getElementById('pfct-filter-size')?.value || '';
-        const priceFilter = document.getElementById('pfct-filter-price')?.value || '';
-        const ratingFilter = document.getElementById('pfct-filter-rating')?.value || '';
-        const sortColumn = document.getElementById('pfct-sort-column')?.value || 'price';
-        const sortDirection = document.getElementById('pfct-sort-direction')?.value || 'asc';
-
-        // Filter data
-        filteredData = allData.filter(row => {
-            if (searchTerm) {
-                const searchableText = [
-                    row.business_name, row.plan_name, row.account_type, 
-                    row.account_size, row.drawdown_mode
-                ].join(' ').toLowerCase();
-                if (!searchableText.includes(searchTerm)) return false;
-            }
-
-            if (businessFilter && row.business_name !== businessFilter) return false;
-            
-            if (sizeFilter) {
-                const normalizedSize = normalizeAccountSize(row.account_size);
-                if (normalizedSize !== sizeFilter) return false;
-            }
-            
-            if (priceFilter) {
-                const rowPrice = getNumericPrice(row);
-                const maxPrice = parseFloat(priceFilter);
-                if (!isNaN(maxPrice) && rowPrice > 0 && rowPrice > maxPrice) return false;
-            }
-
-            if (ratingFilter) {
-                const rowRating = parseFloat(row.trustpilot_score);
-                const minRating = parseFloat(ratingFilter);
-                if (isNaN(rowRating) || rowRating < minRating) return false;
-            }
-
-            return true;
-        });
-
-        // Sort data
-        filteredData.sort((a, b) => {
-            let valueA, valueB;
-            
-            if (sortColumn === 'price') {
-                valueA = getNumericPrice(a);
-                valueB = getNumericPrice(b);
-            } else if (sortColumn === 'profit_goal') {
-                valueA = parseFloat(a.profit_goal?.replace(/[$,]/g, '')) || 0;
-                valueB = parseFloat(b.profit_goal?.replace(/[$,]/g, '')) || 0;
-            } else if (sortColumn === 'trustpilot_score') {
-                valueA = parseFloat(a.trustpilot_score) || 0;
-                valueB = parseFloat(b.trustpilot_score) || 0;
-            } else {
-                valueA = a[sortColumn] || '';
-                valueB = b[sortColumn] || '';
-            }
-
-            if (typeof valueA === 'string') {
-                return sortDirection === 'asc' ? 
-                    valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
-            } else {
-                return sortDirection === 'asc' ? valueA - valueB : valueB - valueA;
-            }
-        });
-
-        // Reset pagination
-        currentPage = 0;
-        displayedData = [];
+        const filters = getFilterValues();
+        filteredData = allData.filter(row => passesFilters(row, filters));
+        sortData(filters.sortColumn, filters.sortDirection);
+        resetPagination();
         loadMoreResults();
     }
 
-    // Load more results (pagination)
+    function getFilterValues() {
+        return {
+            search: document.getElementById('pfct-search')?.value.toLowerCase() || '',
+            business: document.getElementById('pfct-filter-business')?.value || '',
+            size: document.getElementById('pfct-filter-size')?.value || '',
+            maxPrice: document.getElementById('pfct-filter-price')?.value || '',
+            minRating: document.getElementById('pfct-filter-rating')?.value || '',
+            sortColumn: document.getElementById('pfct-sort-column')?.value || 'price',
+            sortDirection: document.getElementById('pfct-sort-direction')?.value || 'asc'
+        };
+    }
+
+    function passesFilters(row, filters) {
+        // Search filter
+        if (filters.search) {
+            const searchText = [row.business_name, row.plan_name, row.account_type, row.account_size, row.drawdown_mode]
+                .join(' ').toLowerCase();
+            if (!searchText.includes(filters.search)) return false;
+        }
+
+        // Business filter
+        if (filters.business && row.business_name !== filters.business) return false;
+        
+        // Size filter
+        if (filters.size && normalizeAccountSize(row.account_size) !== filters.size) return false;
+        
+        // Price filter
+        if (filters.maxPrice) {
+            const rowPrice = getNumericPrice(row);
+            const maxPrice = parseFloat(filters.maxPrice);
+            if (!isNaN(maxPrice) && rowPrice > 0 && rowPrice > maxPrice) return false;
+        }
+
+        // Rating filter
+        if (filters.minRating) {
+            const rowRating = parseFloat(row.trustpilot_score);
+            const minRating = parseFloat(filters.minRating);
+            if (isNaN(rowRating) || rowRating < minRating) return false;
+        }
+
+        return true;
+    }
+
+    function sortData(column, direction) {
+        filteredData.sort((a, b) => {
+            let valueA = getSortValue(a, column);
+            let valueB = getSortValue(b, column);
+
+            if (typeof valueA === 'string') {
+                return direction === 'asc' ? 
+                    valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            }
+            return direction === 'asc' ? valueA - valueB : valueB - valueA;
+        });
+    }
+
+    function getSortValue(row, column) {
+        switch (column) {
+            case 'price':
+                return getNumericPrice(row);
+            case 'profit_goal':
+                return parseFloat(row.profit_goal?.replace(/[$,]/g, '')) || 0;
+            case 'trustpilot_score':
+                return parseFloat(row.trustpilot_score) || 0;
+            default:
+                return row[column] || '';
+        }
+    }
+
+    // ========================================
+    // TABLE RENDERING
+    // ========================================
+    function renderTable() {
+        const tbody = document.querySelector('.pfct-comparison-table tbody');
+        if (!tbody) return;
+
+        if (currentPage === 1) tbody.innerHTML = '';
+
+        if (displayedData.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 20px; color: ${CONFIG.colors.textMuted};">No results match your criteria.</td></tr>`;
+            return;
+        }
+
+        const startIndex = (currentPage - 1) * CONFIG.resultsPerPage;
+        const newRows = displayedData.slice(startIndex);
+
+        newRows.forEach(row => tbody.appendChild(createTableRow(row)));
+        addTableInteractivity();
+    }
+
+    function createTableRow(row) {
+        const tr = document.createElement('tr');
+        tr.style.color = CONFIG.colors.primaryText;
+        tr.innerHTML = `
+            <td style="color: ${CONFIG.colors.primaryText}; padding: ${CONFIG.table.cellPadding};"><strong>${row.business_name || 'N/A'}</strong></td>
+            <td style="color: ${CONFIG.colors.primaryText}; padding: ${CONFIG.table.cellPadding};">${row.plan_name || 'N/A'}</td>
+            <td style="color: ${CONFIG.colors.primaryText}; padding: ${CONFIG.table.cellPadding};">${row.account_type || 'N/A'}</td>
+            <td style="color: ${CONFIG.colors.primaryText}; padding: ${CONFIG.table.cellPadding};">${normalizeAccountSize(row.account_size) || 'N/A'}</td>
+            <td style="color: ${CONFIG.colors.primaryText}; padding: ${CONFIG.table.cellPadding};">${row.price_raw || 'N/A'}</td>
+            <td style="color: ${CONFIG.colors.primaryText}; padding: ${CONFIG.table.cellPadding};">${formatCurrency(row.profit_goal)}</td>
+            <td style="color: ${CONFIG.colors.primaryText}; padding: ${CONFIG.table.cellPadding};">${formatCurrency(row.trailing_drawdown)}</td>
+            <td style="color: ${CONFIG.colors.primaryText}; padding: ${CONFIG.table.cellPadding};">${formatCurrency(row.daily_loss_limit)}</td>
+            <td style="color: ${CONFIG.colors.primaryText}; padding: ${CONFIG.table.cellPadding};">${formatCurrency(row.activation_fee)}</td>
+            <td style="color: ${CONFIG.colors.primaryText}; padding: ${CONFIG.table.cellPadding};">${formatCurrency(row.reset_fee)}</td>
+            <td style="color: ${CONFIG.colors.primaryText}; padding: ${CONFIG.table.cellPadding};">${row.drawdown_mode || 'N/A'}</td>
+            <td class="pfct-trustpilot" style="padding: ${CONFIG.table.cellPadding};">${formatTrustpilotScore(row.trustpilot_score)}</td>
+        `;
+        return tr;
+    }
+
+    // ========================================
+    // PAGINATION
+    // ========================================
+    function resetPagination() {
+        currentPage = 0;
+        displayedData = [];
+    }
+
     function loadMoreResults() {
-        const startIndex = currentPage * RESULTS_PER_PAGE;
-        const endIndex = startIndex + RESULTS_PER_PAGE;
+        const startIndex = currentPage * CONFIG.resultsPerPage;
+        const endIndex = startIndex + CONFIG.resultsPerPage;
         const newResults = filteredData.slice(startIndex, endIndex);
         
         displayedData = [...displayedData, ...newResults];
@@ -313,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const countElement = document.getElementById('pfct-results-count');
         if (countElement) {
             countElement.textContent = `Showing ${displayedData.length} of ${filteredData.length} results`;
-            countElement.style.color = '#115bff';
+            countElement.style.color = CONFIG.colors.primary;
         }
     }
 
@@ -324,179 +508,52 @@ document.addEventListener('DOMContentLoaded', function() {
             loadMoreBtn.style.display = hasMore ? 'block' : 'none';
             if (hasMore) {
                 const remaining = filteredData.length - displayedData.length;
-                loadMoreBtn.textContent = `Load More (${Math.min(remaining, RESULTS_PER_PAGE)} more)`;
+                loadMoreBtn.textContent = `Load More (${Math.min(remaining, CONFIG.resultsPerPage)} more)`;
             }
         }
     }
 
-    // Render table with current displayed data
-    function renderTable() {
-        const tableElement = document.querySelector('.pfct-comparison-table');
-        if (!tableElement) return;
-
-        const tbody = tableElement.querySelector('tbody');
-        if (!tbody) return;
-
-        if (currentPage === 1) {
-            tbody.innerHTML = '';
-        }
-
-        if (displayedData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 20px; color: #666;">No results match your criteria.</td></tr>';
-            return;
-        }
-
-        const startIndex = (currentPage - 1) * RESULTS_PER_PAGE;
-        const newRows = displayedData.slice(startIndex);
-
-        newRows.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.style.color = '#115bff';
-            tr.innerHTML = `
-                <td style="color: #115bff;"><strong>${row.business_name || 'N/A'}</strong></td>
-                <td style="color: #115bff;">${row.plan_name || 'N/A'}</td>
-                <td style="color: #115bff;">${row.account_type || 'N/A'}</td>
-                <td style="color: #115bff;">${normalizeAccountSize(row.account_size) || 'N/A'}</td>
-                <td style="color: #115bff;">${getFormattedPrice(row)}</td>
-                <td style="color: #115bff;">${formatCurrency(row.profit_goal)}</td>
-                <td style="color: #115bff;">${formatCurrency(row.trailing_drawdown)}</td>
-                <td style="color: #115bff;">${formatCurrency(row.daily_loss_limit)}</td>
-                <td style="color: #115bff;">${formatCurrency(row.activation_fee)}</td>
-                <td style="color: #115bff;">${formatCurrency(row.reset_fee)}</td>
-                <td style="color: #115bff;">${row.drawdown_mode || 'N/A'}</td>
-                <td class="pfct-trustpilot">${formatTrustpilotScore(row.trustpilot_score)}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        addTableInteractivity();
+    // ========================================
+    // EVENT LISTENERS
+    // ========================================
+    function setupEventListeners() {
+        setupFilterListeners();
+        setupScrollControls();
+        setupLoadMoreButton();
     }
 
-    // Load and display table data
-    async function loadTableData() {
-        if (!tableContent) return;
-
-        tableContent.innerHTML = '<div style="text-align: center; padding: 20px; color: #115bff;">Loading Prop Firm comparison data...</div>';
-
-        try {
-            const response = await fetch(CSV_URL);
-            if (!response.ok) throw new Error(`Failed to fetch CSV: ${response.status}`);
-            
-            const csvText = await response.text();
-            allData = parseCSV(csvText);
-            filteredData = [...allData];
-            
-            if (allData.length === 0) throw new Error('No data found in CSV file');
-
-            const filterControls = createFilterControls(allData);
-            
-            const tableHTML = `
-                <div style="text-align: center; margin-bottom: 10px;">
-                    <button id="scroll-left" style="padding: 8px 12px; margin-right: 10px; background: #115bff; color: white; border: none; border-radius: 4px; cursor: pointer;">← Scroll Left</button>
-                    <button id="scroll-right" style="padding: 8px 12px; background: #115bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Scroll Right →</button>
-                </div>
-
-                <div id="table-scroll-container" style="overflow-x: auto; border: 1px solid #dee2e6; border-radius: 4px; background: white;">
-                    <table class="pfct-comparison-table" style="width: 100%; border-collapse: collapse; min-width: 1800px; font-size: 14px;">
-                        <thead>
-                            <tr style="background: #115bff !important; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Business</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Plan Name</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white !important;">Account Type</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white !important;">Account Size</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white !important;">Price</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white !important;">Profit Goal</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Trailing Drawdown</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Daily Loss Limit</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Activation Fee</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 120px; color: white !important;">Reset Fee</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 140px; color: white !important;">Drawdown Mode</th>
-                                <th style="padding: 15px; text-align: left; border: 1px solid #dee2e6; min-width: 150px; color: white !important;">Trustpilot Rating</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-
-                <div style="text-align: center; margin: 20px 0;">
-                    <button id="pfct-load-more" style="padding: 12px 24px; background: #115bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; display: none;">
-                        Load More
-                    </button>
-                </div>
-
-                <div style="text-align: center; margin-top: 20px; font-size: 14px; color: #666;">
-                    <p>* Prices and terms subject to change. Verify with providers.</p>
-                    <p>★ = Trustpilot ratings updated regularly</p>
-                    <p>Last updated: ${new Date().toLocaleDateString()}</p>
-                </div>
-            `;
-            
-            tableContent.innerHTML = '';
-            tableContent.appendChild(filterControls);
-            tableContent.insertAdjacentHTML('beforeend', tableHTML);
-            
-            setupFilterListeners();
-            setupScrollControls();
-            setupLoadMoreButton();
-            applyFilters();
-            
-        } catch (error) {
-            console.error('Error loading CSV data:', error);
-            tableContent.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #d63638;">
-                    <p>Unable to load data from CSV file.</p>
-                    <p style="font-size: 12px; color: #666;">${error.message}</p>
-                </div>
-            `;
-        }
-    }
-
-    // Setup all event listeners
     function setupFilterListeners() {
+        // Search input with debounce
         const searchInput = document.getElementById('pfct-search');
         if (searchInput) {
-            searchInput.addEventListener('input', debounce(applyFilters, 300));
+            searchInput.addEventListener('input', debounce(applyFilters, CONFIG.debounceDelay));
         }
 
+        // Sort controls
         ['pfct-sort-column', 'pfct-sort-direction'].forEach(id => {
             const element = document.getElementById(id);
             if (element) element.addEventListener('change', applyFilters);
         });
 
-        ['pfct-filter-business', 'pfct-filter-size', 'pfct-filter-price', 'pfct-filter-rating'].forEach(id => {
+        // Filter controls
+        ['pfct-filter-business', 'pfct-filter-size', 'pfct-filter-rating'].forEach(id => {
             const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('change', applyFilters);
-                if (element.type === 'number') {
-                    element.addEventListener('input', debounce(applyFilters, 300));
-                }
-            }
+            if (element) element.addEventListener('change', applyFilters);
         });
 
+        // Price filter with debounce
+        const priceFilter = document.getElementById('pfct-filter-price');
+        if (priceFilter) {
+            priceFilter.addEventListener('input', debounce(applyFilters, CONFIG.debounceDelay));
+        }
+
+        // Clear filters button
         const clearBtn = document.getElementById('pfct-clear-filters');
         if (clearBtn) {
-            clearBtn.addEventListener('click', () => {
-                document.getElementById('pfct-search').value = '';
-                document.getElementById('pfct-filter-business').value = '';
-                document.getElementById('pfct-filter-size').value = '';
-                document.getElementById('pfct-filter-price').value = '';
-                document.getElementById('pfct-filter-rating').value = '';
-                document.getElementById('pfct-sort-column').value = 'price';
-                document.getElementById('pfct-sort-direction').value = 'asc';
-                applyFilters();
-            });
+            clearBtn.addEventListener('click', clearAllFilters);
         }
     }
 
-    // Setup load more button
-    function setupLoadMoreButton() {
-        const loadMoreBtn = document.getElementById('pfct-load-more');
-        if (loadMoreBtn) {
-            loadMoreBtn.addEventListener('click', loadMoreResults);
-        }
-    }
-
-    // Setup horizontal scroll controls
     function setupScrollControls() {
         const scrollContainer = document.getElementById('table-scroll-container');
         const scrollLeft = document.getElementById('scroll-left');
@@ -504,13 +561,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (scrollContainer && scrollLeft && scrollRight) {
             scrollLeft.addEventListener('click', () => {
-                scrollContainer.scrollBy({ left: -200, behavior: 'smooth' });
+                scrollContainer.scrollBy({ left: -CONFIG.scrollAmount, behavior: 'smooth' });
             });
 
             scrollRight.addEventListener('click', () => {
-                scrollContainer.scrollBy({ left: 200, behavior: 'smooth' });
+                scrollContainer.scrollBy({ left: CONFIG.scrollAmount, behavior: 'smooth' });
             });
 
+            // Shift+scroll for horizontal scrolling
             scrollContainer.addEventListener('wheel', (e) => {
                 if (e.shiftKey) {
                     e.preventDefault();
@@ -520,26 +578,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
+    function setupLoadMoreButton() {
+        const loadMoreBtn = document.getElementById('pfct-load-more');
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', loadMoreResults);
+        }
     }
 
-    // Table interactivity
+    function clearAllFilters() {
+        document.getElementById('pfct-search').value = '';
+        document.getElementById('pfct-filter-business').value = '';
+        document.getElementById('pfct-filter-size').value = '';
+        document.getElementById('pfct-filter-price').value = '';
+        document.getElementById('pfct-filter-rating').value = '';
+        document.getElementById('pfct-sort-column').value = 'price';
+        document.getElementById('pfct-sort-direction').value = 'asc';
+        applyFilters();
+    }
+
+    // ========================================
+    // TABLE INTERACTIVITY
+    // ========================================
     function addTableInteractivity() {
         const tableRows = document.querySelectorAll('.pfct-comparison-table tbody tr');
         
         tableRows.forEach(row => {
             row.style.cursor = 'pointer';
             row.addEventListener('mouseenter', function() {
-                this.style.backgroundColor = '#f8f9fa';
+                this.style.backgroundColor = CONFIG.colors.lightGray;
             });
             row.addEventListener('mouseleave', function() {
                 this.style.backgroundColor = '';
@@ -551,5 +617,59 @@ document.addEventListener('DOMContentLoaded', function() {
             cell.style.textAlign = 'center';
             cell.style.fontSize = '13px';
         });
+    }
+
+    // ========================================
+    // MAIN LOAD FUNCTION
+    // ========================================
+    async function loadTableData() {
+        if (!tableContent) return;
+
+        tableContent.innerHTML = `<div style="text-align: center; padding: 20px; color: ${CONFIG.colors.primaryText};">Loading Prop Firm comparison data...</div>`;
+
+        try {
+            const response = await fetch(CONFIG.csvUrl);
+            if (!response.ok) throw new Error(`Failed to fetch CSV: ${response.status}`);
+            
+            const csvText = await response.text();
+            allData = parseCSV(csvText);
+            filteredData = [...allData];
+            
+            if (allData.length === 0) throw new Error('No data found in CSV file');
+
+            const filterControls = createFilterControls(allData);
+            const tableHTML = createTableHTML();
+            
+            tableContent.innerHTML = '';
+            tableContent.appendChild(filterControls);
+            tableContent.insertAdjacentHTML('beforeend', tableHTML);
+            
+            setupEventListeners();
+            applyFilters();
+            
+        } catch (error) {
+            console.error('Error loading CSV data:', error);
+            tableContent.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: ${CONFIG.colors.errorRed};">
+                    <p>Unable to load data from CSV file.</p>
+                    <p style="font-size: 12px; color: ${CONFIG.colors.textMuted};">${error.message}</p>
+                </div>
+            `;
+        }
+    }
+
+    // ========================================
+    // UTILITY FUNCTIONS
+    // ========================================
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
     }
 });
