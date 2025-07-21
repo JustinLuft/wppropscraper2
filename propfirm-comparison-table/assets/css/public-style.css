@@ -1,71 +1,47 @@
 /**
- * Fixed CSS for PropFirm Comparison Table
- * Coordinated with JavaScript implementation
+ * Simplified CSS for PropFirm Comparison Table
  */
 
 /* Main container */
 .pfct-wrapper {
-    max-width: none;
-    margin: 20px auto;
+    max-width: 1400px;
+    margin: 0 auto;
     padding: 20px;
     font-family: Arial, sans-serif;
+    background: #f8f9fa;
 }
 
-/* Center the main heading and description */
+/* Header */
 .pfct-header {
-    text-align: center !important;
+    text-align: center;
     margin-bottom: 30px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
 }
 
 .pfct-header h1,
 .pfct-header h2 {
-    color: #115bff !important;
-    margin: 0 auto 15px auto !important;
-    font-size: 28px !important;
-    text-align: center !important;
-    display: block !important;
-    width: 100% !important;
+    color: #333;
+    font-size: 28px;
+    margin-bottom: 15px;
 }
 
 .pfct-header p {
-    color: #666 !important;
-    font-size: 16px !important;
-    margin: 0 auto 20px auto !important;
-    text-align: center !important;
-    display: block !important;
-    width: 100% !important;
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 20px;
 }
 
-/* Table container - matches JS display logic */
-#pfct-table-container {
-    margin-top: 20px;
-    animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Filter controls - matches JS structure exactly */
+/* Filters section */
 .pfct-filters {
     background: white;
-    color: #115bff;
-    padding: 18px;
+    padding: 20px;
     margin-bottom: 20px;
     border-radius: 8px;
-    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .pfct-filters h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
     color: #115bff;
+    margin: 0 0 15px 0;
     font-size: 18px;
 }
 
@@ -73,23 +49,16 @@
 #pfct-search {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border-radius: 4px;
+    margin-bottom: 15px;
     font-size: 14px;
-    color: #115bff;
-    box-sizing: border-box;
 }
 
-#pfct-search:focus {
-    border-color: #115bff;
-    outline: none;
-    box-shadow: 0 0 5px rgba(17, 91, 255, 0.3);
-}
-
-/* Filter grid layouts - matches JS structure */
+/* Filter grid */
 .pfct-filters > div:nth-child(3) {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 15px;
     margin-bottom: 15px;
 }
@@ -100,12 +69,12 @@
     gap: 15px;
 }
 
-/* Filter labels and controls */
+/* Filter inputs */
 .pfct-filters label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
-    color: #115bff;
+    color: #333;
     font-size: 14px;
 }
 
@@ -113,43 +82,27 @@
 .pfct-filters input[type="number"] {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border-radius: 4px;
-    color: #115bff;
     font-size: 14px;
-    background: white;
-    box-sizing: border-box;
 }
 
-.pfct-filters select:focus,
-.pfct-filters input[type="number"]:focus {
-    border-color: #115bff;
-    outline: none;
-    box-shadow: 0 0 3px rgba(17, 91, 255, 0.3);
-}
-
-/* Clear filters button - matches JS styling */
+/* Clear filters button */
 #pfct-clear-filters {
-    padding: 8px 12px;
+    padding: 8px 16px;
     background: #6c757d;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
-    transition: background 0.3s ease;
 }
 
 #pfct-clear-filters:hover {
     background: #5a6268;
 }
 
-#pfct-clear-filters:focus {
-    outline: 2px solid #115bff;
-    outline-offset: 2px;
-}
-
-/* Results counter - centered */
+/* Results counter */
 .pfct-results-counter {
     text-align: center;
     margin: 15px 0;
@@ -157,11 +110,11 @@
 
 #pfct-results-count {
     font-weight: bold;
-    color: #115bff !important;
+    color: #115bff;
     font-size: 16px;
 }
 
-/* Scroll controls - centered */
+/* Scroll controls */
 .pfct-scroll-controls {
     text-align: center;
     margin-bottom: 10px;
@@ -169,14 +122,13 @@
 
 #scroll-left,
 #scroll-right {
-    padding: 8px 12px;
+    padding: 8px 16px;
     background: #115bff;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    transition: background 0.3s ease;
+    margin: 0 5px;
 }
 
 #scroll-left:hover,
@@ -184,90 +136,80 @@
     background: #0d4dd4;
 }
 
-#scroll-left {
-    margin-right: 10px;
-}
-
-/* Table scroll container */
+/* Table container */
 #table-scroll-container {
     overflow-x: auto;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
     background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     margin-bottom: 20px;
-    scroll-behavior: smooth;
 }
 
-/* Main table - matches JS structure */
+/* Main table */
 .pfct-comparison-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1800px;
+    min-width: 1200px;
     font-size: 14px;
-    background: white;
 }
 
 .pfct-comparison-table thead tr {
-    background: #115bff !important;
-    border-bottom: 2px solid #dee2e6;
+    background: #115bff;
 }
 
 .pfct-comparison-table th {
-    padding: 15px;
+    padding: 15px 12px;
     text-align: left;
-    border: 1px solid #dee2e6;
-    color: white !important;
+    color: white;
     font-weight: bold;
-    font-size: 14px;
+    border-right: 1px solid rgba(255,255,255,0.2);
+    white-space: nowrap;
 }
 
-.pfct-comparison-table th:nth-child(1) { min-width: 140px; }
-.pfct-comparison-table th:nth-child(2) { min-width: 140px; }
-.pfct-comparison-table th:nth-child(3) { min-width: 120px; }
-.pfct-comparison-table th:nth-child(4) { min-width: 120px; }
-.pfct-comparison-table th:nth-child(5) { min-width: 120px; }
-.pfct-comparison-table th:nth-child(6) { min-width: 120px; }
-.pfct-comparison-table th:nth-child(7) { min-width: 140px; }
-.pfct-comparison-table th:nth-child(8) { min-width: 140px; }
-.pfct-comparison-table th:nth-child(9) { min-width: 140px; }
-.pfct-comparison-table th:nth-child(10) { min-width: 120px; }
-.pfct-comparison-table th:nth-child(11) { min-width: 140px; }
-.pfct-comparison-table th:nth-child(12) { min-width: 150px; }
+.pfct-comparison-table th:last-child {
+    border-right: none;
+}
 
-/* FIXED: Table rows - removed conflicting hover effects */
 .pfct-comparison-table tbody tr {
-    color: #115bff;
-    /* Removed transition and cursor from CSS - handled by JS */
+    border-bottom: 1px solid #eee;
 }
 
-/* Let JavaScript handle hover effects completely */
 .pfct-comparison-table tbody tr:hover {
-    /* Remove CSS hover - JS handles this */
+    background: #f8f9fa;
 }
 
 .pfct-comparison-table td {
-    padding: 12px 15px;
+    padding: 12px;
     text-align: left;
-    border: 1px solid #dee2e6;
-    color: #115bff;
-    font-size: 14px;
+    border-right: 1px solid #eee;
+    color: #333;
+    vertical-align: middle;
+}
+
+.pfct-comparison-table td:last-child {
+    border-right: none;
 }
 
 .pfct-comparison-table td strong {
-    color: #115bff;
+    color: #007bff;
 }
 
-/* Trustpilot cell styling - matches JS */
+/* Business name column (first column) */
+.pfct-comparison-table td:first-child {
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* Trustpilot styling */
 .pfct-trustpilot {
     text-align: center;
-    font-size: 13px;
 }
 
 .pfct-trustpilot span {
     font-weight: bold;
 }
 
-/* Load more button - centered */
+/* Load more button */
 .pfct-load-more-container {
     text-align: center;
     margin: 20px 0;
@@ -275,86 +217,57 @@
 
 #pfct-load-more {
     padding: 12px 24px;
-    background: #115bff;
+    background: #007bff;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
-    transition: background 0.3s ease;
-    display: none;
 }
 
 #pfct-load-more:hover {
-    background: #0d4dd4;
+    background: #0056b3;
 }
 
-#pfct-load-more:focus {
-    outline: 2px solid #115bff;
-    outline-offset: 2px;
-}
-
-/* Footer text styling - centered */
+/* Footer */
 .pfct-footer {
     text-align: center;
     margin-top: 20px;
-    font-size: 14px;
     color: #666;
-}
-
-.pfct-footer p {
-    margin: 5px 0;
+    font-size: 14px;
 }
 
 /* No results message */
-.pfct-comparison-table tbody td[colspan="12"] {
+.pfct-comparison-table tbody td[colspan] {
     text-align: center;
-    padding: 20px;
+    padding: 40px;
     color: #666;
     font-style: italic;
 }
 
-/* Loading message */
-.pfct-loading-message {
-    text-align: center;
-    padding: 20px;
-    color: #115bff;
-    font-size: 16px;
-}
-
-/* Error message */
+/* Loading and error messages */
+.pfct-loading-message,
 .pfct-error-message {
     text-align: center;
     padding: 20px;
-    color: #d63638;
+    font-size: 16px;
 }
 
-.pfct-error-message p:first-child {
-    font-weight: bold;
-    margin-bottom: 10px;
+.pfct-loading-message {
+    color: #007bff;
 }
 
-.pfct-error-message p:last-child {
-    font-size: 12px;
-    color: #666;
+.pfct-error-message {
+    color: #dc3545;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
     .pfct-wrapper {
-        margin: 10px;
-        padding: 15px;
+        padding: 10px;
     }
     
-    .pfct-filters {
-        padding: 15px;
-    }
-    
-    .pfct-filters > div:nth-child(3) {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
+    .pfct-filters > div:nth-child(3),
     .pfct-filters > div:nth-child(4) {
         grid-template-columns: 1fr;
         gap: 10px;
@@ -362,119 +275,22 @@
     
     .pfct-comparison-table {
         font-size: 12px;
+        min-width: 900px;
     }
     
     .pfct-comparison-table th,
     .pfct-comparison-table td {
         padding: 8px 6px;
     }
-    
-    #scroll-left,
-    #scroll-right {
-        padding: 6px 10px;
-        font-size: 12px;
-    }
-    
-    #scroll-left {
-        margin-right: 5px;
-    }
-}
-
-@media (max-width: 600px) {
-    .pfct-filters > div:nth-child(4) {
-        grid-template-columns: 1fr;
-    }
-    
-    .pfct-comparison-table {
-        min-width: 1200px;
-    }
-    
-    .pfct-comparison-table th,
-    .pfct-comparison-table td {
-        padding: 6px 4px;
-        font-size: 12px;
-    }
 }
 
 @media (max-width: 480px) {
     .pfct-filters {
-        padding: 12px;
-    }
-    
-    .pfct-filters h3 {
-        font-size: 16px;
+        padding: 15px;
     }
     
     #pfct-clear-filters {
         width: 100%;
         margin-top: 10px;
     }
-    
-    #pfct-load-more {
-        padding: 10px 20px;
-        font-size: 14px;
-    }
-}
-
-/* Print styles */
-@media print {
-    .pfct-filters,
-    #scroll-left,
-    #scroll-right,
-    #pfct-load-more {
-        display: none;
-    }
-    
-    .pfct-comparison-table {
-        box-shadow: none;
-        border: 1px solid #000;
-        font-size: 10px;
-    }
-    
-    .pfct-comparison-table th,
-    .pfct-comparison-table td {
-        padding: 4px;
-        border: 1px solid #000;
-    }
-}
-
-/* Accessibility improvements */
-.pfct-filters input:focus,
-.pfct-filters select:focus,
-button:focus {
-    outline: 2px solid #115bff;
-    outline-offset: 2px;
-}
-
-/* FIXED: Removed conflicting hover effects */
-.pfct-filters select:hover,
-.pfct-filters input:hover {
-    border-color: #115bff;
-}
-
-/* FIXED: Simplified button hover - no transform conflicts */
-button:hover {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* FIXED: Removed animation that could conflict with JS state changes */
-.pfct-comparison-table tbody {
-    /* Removed transition - let JS handle state changes */
-}
-
-/* Ensure proper box-sizing for all elements */
-.pfct-filters *,
-.pfct-comparison-table *,
-button {
-    box-sizing: border-box;
-}
-
-/* FIXED: Ensure JS-managed styles take precedence */
-.pfct-comparison-table tbody tr[style] {
-    /* Allow JS inline styles to override CSS */
-}
-
-/* FIXED: Ensure trustpilot formatting doesn't conflict with JS */
-.pfct-trustpilot[style] {
-    /* Allow JS inline styles for trustpilot ratings */
 }
