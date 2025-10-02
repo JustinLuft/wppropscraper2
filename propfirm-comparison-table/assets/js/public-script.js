@@ -100,6 +100,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!value || value === '' || value === 'N/A' || value === 'None') return 'N/A';
         if (value.toString().includes('$')) return value;
         
+        // Check if the value is a percentage
+        if (value.toString().includes('%')) return value;
+        
         // Check if the value contains non-numeric text (like "Contacts", "Steps", etc.)
         const hasNonNumericText = /[a-zA-Z]/.test(value.toString());
         if (hasNonNumericText) return value; // Return as-is if it contains letters
